@@ -1,0 +1,25 @@
+[package]
+name = "server"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.71"
+thiserror={version="1.0.40"}
+askama = "0.12.0"
+db-schema = "0.2.1"
+sqlx = "0.6.3"
+openai = "1.0.0-alpha.13"
+dotenv = "0.15.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1"
+tokio = "1.28.2"
+tracing = "0.1"
+tracing-wasm = "0.2"
+wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
+
+actix-cors = "0.6.0-beta.10"
+actix-web = "4.0.0-rc.2"
+actix-rt = "2.6.0"

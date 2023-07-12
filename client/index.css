@@ -1,0 +1,7 @@
+/* 通过 tailwind 注解方式引入 tailwind 样式包 */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 通过 config 注解引入 tailwind 配置*/
+@config "./tailwind.config.js";

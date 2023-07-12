@@ -8,8 +8,8 @@ pub async fn hello_handler() -> impl Responder {
 
 // chatgpt_handler
 pub async fn chatgpt_handler(chat: Chat) -> impl Responder {
-    println!("Received new course");
+    println!("[chatgpt_handler]=========================>{:?}", chat);
 
     chat.do_chat(&chat.sql).await.unwrap();
-    HttpResponse::Ok().json("")
+    HttpResponse::Ok().json("Hello")
 }

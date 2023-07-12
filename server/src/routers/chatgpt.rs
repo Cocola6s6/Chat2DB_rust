@@ -16,11 +16,13 @@ use actix_web::{web, get, Responder, HttpResponse, post};
 
 #[get("/chat/hello")]
 async fn hello() -> impl Responder {
+    println!("[hello]=========================>");
     hello_handler().await
 }
 
 #[post("/chat/chatgpt")]
 async fn chatgpt_router(req_body: String) -> impl Responder {
+    println!("[chatgpt]=========================>{:?}", req_body);
     let chat: Chat = serde_json::from_str::<Chat>(&req_body).unwrap();
     chatgpt_handler(chat).await
 }

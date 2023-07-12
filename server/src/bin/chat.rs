@@ -1,8 +1,8 @@
 use actix_cors::Cors;
 use actix_web::{http, web, App, HttpServer};
 use std::io;
-use Chat2DB_rust::routers::chatgpt::chatgpt_router;
-use Chat2DB_rust::routers::chatgpt::hello;
+use server::routers::chatgpt::chatgpt_router;
+use server::routers::chatgpt::hello;
 
 #[actix_rt::main]
 async fn main() -> io::Result<()> {

@@ -43,7 +43,6 @@ impl Sql {
             2 => {
                 let pool = PgPool::connect(url).await?;
                 let result = sqlx::query(sql).execute(&pool).await?;
-
                 println!("{:#?}", result);
             }
             _ => {
