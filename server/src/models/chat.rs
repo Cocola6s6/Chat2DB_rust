@@ -1,15 +1,15 @@
 use crate::models::message::Message;
 use crate::models::prompt::PromptTemplate;
 use crate::models::sql::Sql;
-use anyhow::{Result, Ok};
+use anyhow::{Ok, Result};
 use askama::Template;
 use openai::{
     chat::{ChatCompletion, ChatCompletionMessage, ChatCompletionMessageRole},
     set_key,
 };
 use serde::{Deserialize, Serialize};
-use std::io::{stdin, stdout, Write};
 
+// TODO Chat结构体待优化，因为和Sql结构体关联了作为VO
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Chat {
     pub openai_key: String,
@@ -27,13 +27,13 @@ impl Chat {
         }
     }
 
-    // do_chat
-    pub async fn do_chat(&self, sql: &Sql) -> Result<()> {
+    // execute_chat
+    pub async fn execute_chat(openai_key: &str, url: &str, ns: &str, text: &str) -> Result<String> {
         println!("[do_chat]=======================>");
-        set_key(self.openai_key.clone());
+        set_key(openai_key.to_string());
 
-        let db_url = sql.url.clone();
-        let db_ns = sql.ns.clone();
+        let db_url = url.to_string();
+        let db_ns = ns.clone();
         let context = Sql::query_schema(&db_url, &db_ns).await?;
         let promptTemp = PromptTemplate { context: &context };
         let prompt = promptTemp.render()?;
@@ -54,11 +54,10 @@ impl Chat {
         // stdin().read_line(&mut user_message_content)?;
         messages.push(ChatCompletionMessage {
             role: ChatCompletionMessageRole::User,
-            content: Some(self.text.clone()),
+            content: Some(text.to_string()),
             name: None,
             function_call: None,
         });
-        
 
         let chat_completion = ChatCompletion::builder("gpt-3.5-turbo", messages.clone())
             .create()
@@ -76,9 +75,11 @@ impl Chat {
 
         let json_str = messages.last().unwrap().content.clone().unwrap();
         let message: Message = serde_json::from_str(&json_str)?;
-        Sql::execute_sql(&db_url, &message.result, message.code).await?;
 
-        Ok(())
+        // TODO 执行sql操作后续放到client端执行
+        // Sql::execute_sql(&db_url, &message.result, message.code).await?;
+
+        Ok(message.result)
     }
 }
 

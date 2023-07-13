@@ -9,5 +9,9 @@ async fn main() {
 
     let sql: Sql = Sql::default();
     let chat = Chat::default();
-    chat.do_chat(&sql).await.unwrap();
+    let openai_key = chat.openai_key.clone();
+    let url = sql.url.clone();
+    let ns = sql.ns.clone();
+    let text = chat.text.clone();
+    Chat::execute_chat(&openai_key, &url, &ns, &text).await.unwrap();
 }

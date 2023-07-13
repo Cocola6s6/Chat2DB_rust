@@ -22,7 +22,17 @@ async fn hello() -> impl Responder {
 
 #[post("/chat/chatgpt")]
 async fn chatgpt_router(req_body: String) -> impl Responder {
-    println!("[chatgpt]=========================>{:?}", req_body);
+    println!("[chatgpt_router]=========================>{:?}", req_body);
     let chat: Chat = serde_json::from_str::<Chat>(&req_body).unwrap();
-    chatgpt_handler(chat).await
+    let openai_key = chat.openai_key.clone();
+    let url = chat.sql.url.clone();
+    let ns = chat.sql.ns.clone();
+    let text = chat.text.clone();
+    chatgpt_handler(&openai_key, &url, &ns, &text).await
+}
+
+#[post("/chat/sql")]
+async fn sql_router(req_body: String) -> impl Responder {
+    println!("[sql_router]=========================>{:?}", req_body);
+    hello_handler().await
 }

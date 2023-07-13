@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.71"
+dotenv = "0.15.0"
 console_error_panic_hook = "0.1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1"
@@ -18,7 +19,8 @@ tracing = "0.1"
 tracing-wasm = "0.2"
 js-sys = "0.3.56"
 wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
-
+wasm-bindgen-futures = "0.4"
+rand = "0.8"
 
 
 [dependencies.web-sys]
@@ -28,6 +30,8 @@ features = [
     "VideoTrack",
     "HtmlVideoElement",
     "HtmlSelectElement",
+    "HtmlSpanElement",
+    "HtmlTextAreaElement",
     "Navigator",
     "MediaStream",
     "MediaDeviceInfo",

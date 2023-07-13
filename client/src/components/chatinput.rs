@@ -1,68 +1,86 @@
-use anyhow::Result;
-use sycamore::futures::*;
+use crate::components::chatoutput::Chatoutput;
+use crate::AppState;
+use anyhow::{Ok, Result};
+use rand::Rng;
+use std::mem::transmute;
+use sycamore::futures::spawn_local_scoped;
 use sycamore::prelude::*;
 use tracing::info;
+use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::{JsCast, JsValue};
-use web_sys::{Event, HtmlInputElement, MouseEvent, Request, RequestInit, RequestMode, Response};
+use wasm_bindgen_futures::JsFuture;
+use web_sys::{EventTarget, HtmlTextAreaElement, Request, RequestInit, RequestMode, Response};
 
-// chatinput 组件
+// input 组件
 #[component]
 pub async fn Chatinput<G: Html>(ctx: Scope<'_>) -> View<G> {
-    // let input_class = || {
-    //     format!("w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm sm:leading-6")
-    // };
+    let ouput_signal = create_signal(ctx, String::from("AAA"));
 
-    let input_text = create_signal(ctx, "".to_string()); // input_text监听变量
-    let output_text = create_signal(ctx, "".to_string()); // output_text监听变量
-    let click_button = move |_| {
-        info!("[click button]=======================>");
-        // spawn_local_scoped(ctx, async move {
-        //     let text = input_text.get();
-        //     let response = chat(text.to_string()).await.unwrap_or_default();
-        //     output_text.set(response.as_string().unwrap());
-        // });
-        let response = JsValue::from_str("hello");
-        output_text.set(response.as_string().unwrap());
-    };
+    let window = web_sys::window().unwrap();
+    let document = window.document().expect("no global document exists");
 
-    let set_output_text = create_memo(ctx, || {
-        info!(
-            "[set_output_text]=======================>{}",
-            output_text.get()
-        );
-        output_text.get()
-    });
+    let ask_btn: EventTarget = document.get_element_by_id("ask_btn").unwrap().into();
+    let text = document
+        .get_element_by_id("text")
+        .unwrap()
+        .dyn_into::<HtmlTextAreaElement>()
+        .unwrap()
+        .value();
+    let text_signal = create_signal(ctx, String::from(text));
+    let state = use_context::<AppState>(ctx);
+    button_event_listener(
+        ctx,
+        "click",
+        ask_btn,
+        Box::new(move || {
+            spawn_local_scoped(ctx, async move {
+                let response = chat(
+                    state.chat.get().openai_key.clone(),
+                    state.sql.get().url.clone(),
+                    state.sql.get().ns.clone(),
+                    text_signal.get().to_string(),
+                )
+                .await
+                .unwrap_or_default();
+  
+                ouput_signal.set(response.as_string().unwrap());
+            })
+        }),
+    );
 
     view! {ctx,
-        form {
-            div (class="grid gap-6 mb-6 md:grid-cols-2"){
-                div (class="mb-6"){
-                    label(class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"){"Input Here"}
-                    input(type="text",
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500",
-                    on:input = move |e: Event| {
-                        let target = e.target().unwrap().unchecked_into::<HtmlInputElement>();
-                        let value = target.value();
-                        info!("Input: {:?}", &value);
-                        input_text.set(value);
-                    }) {}
-                }
-                button(
-                    class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800", type="submit",
-                    on:click = click_button
-                ) {
-                    "Button"
-                }
-            }
-        }
-        p {
-            "这里是输出的内容："
-            (set_output_text.get())
+        div {
+            Chatoutput(output_text=ouput_signal)
         }
     }
 }
 
-pub async fn chat(text: String) -> Result<JsValue> {
+pub fn button_event_listener<'a>(
+    ctx: Scope<'_>,
+    event: &str,
+    button: EventTarget,
+    callback: Box<dyn Fn() + 'a>,
+) {
+    let handler: Box<dyn Fn() + 'static> = unsafe { transmute(callback) };
+    let callback = Closure::wrap(handler); // 使用 wasm Closure 可以将函数转为 JsValue
+
+    button
+        .add_event_listener_with_callback(event, callback.as_ref().unchecked_ref())
+        .expect("监听请求发送失败");
+
+    // on_cleanup 是一个 hooks 函数，当组件移除时触发
+    on_cleanup(ctx, move || {
+        info!("ctx on_cleanup]===================>");
+        drop(callback);
+    });
+}
+
+pub async fn chat(
+    openai_key: String,
+    db_url: String,
+    db_ns: String,
+    text: String,
+) -> Result<JsValue> {
     info!("[chat]======================>");
     // 创建Request请求
     let mut opts = RequestInit::new();
@@ -72,15 +90,15 @@ pub async fn chat(text: String) -> Result<JsValue> {
     let str_json = format!(
         r#"
         {{
-            "openai_key": "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",
+            "openai_key": "{}",
             "sql": {{
-                "url": "postgres://postgres:postgres@45.128.222.100:15432",
-                "ns": "public"
+                "url": "{}",
+                "ns": "{}"
             }},
             "text": "{}"
         }}
         "#,
-        text
+        openai_key, db_url, db_ns, text
     ); // 注意类型一定要对应，否则会"400 BadRequest"
     opts.body(Some(&JsValue::from_str(str_json.as_str())));
     // opts.body(Some(&JsValue::from_str(text.as_str())));
@@ -104,5 +122,8 @@ pub async fn chat(text: String) -> Result<JsValue> {
     // let courses: Vec<Course> = json.into_serde().unwrap();
     info!("resp: {:?}", json);
 
-    Ok(json)
+    Ok(json.into())
+
+    // let random_float: f64 = rand::thread_rng().gen();
+    // Ok(random_float.to_string().into())
 }
