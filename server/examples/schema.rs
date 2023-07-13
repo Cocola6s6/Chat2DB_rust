@@ -1,5 +1,6 @@
 
 use db_schema::PgSchema;
+use regex::Regex;
 use sqlx::{PgPool, pool};
 
 #[tokio::main]
@@ -31,5 +32,17 @@ async fn generate_sql_statements_for_schema(pool: &PgPool) -> Result<(), sqlx::E
     println!("Triggers: {:?}", triggers);
     println!("Indexes: {:?}", indexes);
 
+    // 正则匹配表名
+    let re = Regex::new(r"CREATE TABLE ([^\s\(]+)").unwrap();
+    tables.into_iter().for_each(|table| {
+        println!("{:?}", table);
+        if let Some(captures) = re.captures(&table) {
+            if let Some(table_name) = captures.get(1) {
+                println!("Table name: {}", table_name.as_str());
+            }
+        }
+    });
+
+   
     Ok(())
 }

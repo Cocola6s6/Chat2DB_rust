@@ -18,3 +18,9 @@ pub async fn sql_handler(url: &str, sql: &str, code: u32) -> impl Responder {
     Sql::execute_sql(url, sql, code);
     HttpResponse::Ok().json("sql_handler")
 }
+
+// table_handler
+pub async fn table_handler(url: &str, ns: &str) -> impl Responder {
+    let response = Sql::query_tables(url, ns).await.unwrap();
+    HttpResponse::Ok().json(response)
+}

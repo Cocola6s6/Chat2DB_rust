@@ -1,8 +1,11 @@
 use actix_cors::Cors;
 use actix_web::{http, web, App, HttpServer};
+use server::models::sql;
 use std::io;
 use server::routers::chatgpt::chatgpt_router;
 use server::routers::chatgpt::hello;
+use server::routers::chatgpt::sql_router;
+use server::routers::chatgpt::table_router;
 
 #[actix_rt::main]
 async fn main() -> io::Result<()> {
@@ -18,7 +21,7 @@ async fn main() -> io::Result<()> {
             .allowed_header(http::header::CONTENT_TYPE)
             .max_age(3600);
 
-        App::new().wrap(cors).service(chatgpt_router).service(hello)
+        App::new().wrap(cors).service(chatgpt_router).service(hello).service(sql_router).service(table_router)
     };
 
     // 启动
