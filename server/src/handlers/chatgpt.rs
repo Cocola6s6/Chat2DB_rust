@@ -13,7 +13,7 @@ pub async fn chatgpt_handler(openai_key: &str, url: &str, ns: &str, text: &str) 
     HttpResponse::Ok().json(response)
 }
 
-// chatgpt_handler
+// sql_handler
 pub async fn sql_handler(url: &str, sql: &str, code: u32) -> impl Responder {
     Sql::execute_sql(url, sql, code);
     HttpResponse::Ok().json("sql_handler")
