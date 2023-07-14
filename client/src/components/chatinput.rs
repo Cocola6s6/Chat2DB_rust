@@ -1,60 +1,96 @@
 use crate::components::chatoutput::Chatoutput;
+use crate::models::chat::Chat;
+use crate::models::db::Db;
 use crate::AppState;
-use anyhow::{Ok, Result};
-use rand::Rng;
 use std::mem::transmute;
 use sycamore::futures::spawn_local_scoped;
 use sycamore::prelude::*;
 use tracing::info;
 use wasm_bindgen::prelude::Closure;
-use wasm_bindgen::{JsCast, JsValue};
-use wasm_bindgen_futures::JsFuture;
-use web_sys::{EventTarget, HtmlTextAreaElement, Request, RequestInit, RequestMode, Response};
+use wasm_bindgen::JsCast;
+use web_sys::{EventTarget, HtmlTextAreaElement};
 
 // input 组件
 #[component]
 pub async fn Chatinput<G: Html>(ctx: Scope<'_>) -> View<G> {
-    let ouput_signal = create_signal(ctx, String::from("AAA"));
+    let state = use_context::<AppState>(ctx);
+    let chat_ouput_signal = create_signal(ctx, String::from("AAA"));
+    let db_ouput_signal = create_signal(ctx, String::from("BBB"));
+    let query_tables_ouput_signal = create_signal(ctx, Vec::new());
 
     let window = web_sys::window().unwrap();
     let document = window.document().expect("no global document exists");
 
     let ask_btn: EventTarget = document.get_element_by_id("ask_btn").unwrap().into();
-    let text = document
-        .get_element_by_id("text")
-        .unwrap()
-        .dyn_into::<HtmlTextAreaElement>()
-        .unwrap()
-        .value();
-    let text_signal = create_signal(ctx, String::from(text));
-    let state = use_context::<AppState>(ctx);
     button_event_listener(
         ctx,
         "click",
         ask_btn,
         Box::new(move || {
             spawn_local_scoped(ctx, async move {
-                let response = chat(
+                // 1、获取输入框内容
+                let text = get_input_text();
+
+                // 2、请求chatapi
+                let resp = Chat::exec_chat(
                     state.chat.get().openai_key.clone(),
-                    state.sql.get().url.clone(),
-                    state.sql.get().ns.clone(),
-                    text_signal.get().to_string(),
+                    state.db.get().db_url.clone(),
+                    state.db.get().db_ns.clone(),
+                    text,
                 )
                 .await
                 .unwrap_or_default();
-  
-                ouput_signal.set(response.as_string().unwrap());
+
+                chat_ouput_signal.set(resp);
+            })
+        }),
+    );
+
+    let exec_btn: EventTarget = document.get_element_by_id("exec_btn").unwrap().into();
+    button_event_listener(
+        ctx,
+        "click",
+        exec_btn,
+        Box::new(move || {
+            spawn_local_scoped(ctx, async move {
+                // 1、获取要执行的sql
+                let sql = chat_ouput_signal.get().to_string();
+
+                // 2、请求dbapi
+                let resp = Db::exec_sql(state.db.get().db_url.clone(), sql)
+                    .await
+                    .unwrap_or_default();
+
+                db_ouput_signal.set(resp);
+            })
+        }),
+    );
+
+    let query_tables_btn: EventTarget = document.get_element_by_id("query_tables_btn").unwrap().into();
+    button_event_listener(
+        ctx,
+        "click",
+        query_tables_btn,
+        Box::new(move || {
+            spawn_local_scoped(ctx, async move {
+                // 请求dbapi
+                let resp = Db::query_tables(state.db.get().db_url.clone(), state.db.get().db_ns.clone())
+                    .await
+                    .unwrap_or_default();
+   
+                    query_tables_ouput_signal.set(resp);
             })
         }),
     );
 
     view! {ctx,
         div {
-            Chatoutput(output_text=ouput_signal)
+            Chatoutput(chat_output_text=chat_ouput_signal, db_output_text=db_ouput_signal, tables_output_text=query_tables_ouput_signal)
         }
     }
 }
 
+// 监听按钮点击事件
 pub fn button_event_listener<'a>(
     ctx: Scope<'_>,
     event: &str,
@@ -75,55 +111,16 @@ pub fn button_event_listener<'a>(
     });
 }
 
-pub async fn chat(
-    openai_key: String,
-    db_url: String,
-    db_ns: String,
-    text: String,
-) -> Result<JsValue> {
-    info!("[chat]======================>");
-    // 创建Request请求
-    let mut opts = RequestInit::new();
-    opts.method("POST");
-    opts.mode(RequestMode::Cors);
+// 获取输入框内容
+pub fn get_input_text() -> String {
+    let window = web_sys::window().unwrap();
+    let document = window.document().expect("no global document exists");
+    let text = document
+        .get_element_by_id("text")
+        .unwrap()
+        .dyn_into::<HtmlTextAreaElement>()
+        .unwrap()
+        .value();
 
-    let str_json = format!(
-        r#"
-        {{
-            "openai_key": "{}",
-            "sql": {{
-                "url": "{}",
-                "ns": "{}"
-            }},
-            "text": "{}"
-        }}
-        "#,
-        openai_key, db_url, db_ns, text
-    ); // 注意类型一定要对应，否则会"400 BadRequest"
-    opts.body(Some(&JsValue::from_str(str_json.as_str())));
-    // opts.body(Some(&JsValue::from_str(text.as_str())));
-    let url = format!("http://localhost:5000/chat/chatgpt");
-    let request = Request::new_with_str_and_init(&url, &opts).unwrap();
-    // request.headers().set("Content-Type", "application/json");
-    // request.headers().set("Accept", "application/json");
-
-    // 使用web_sys调用window的api发送请求
-    let window = web_sys::window()
-        .ok_or("no windows exists".to_string())
-        .unwrap();
-    let resp_value = JsFuture::from(window.fetch_with_request(&request))
-        .await
-        .unwrap();
-
-    // 解析Response响应
-    assert!(resp_value.is_instance_of::<Response>());
-    let resp: Response = resp_value.dyn_into().unwrap();
-    let json = JsFuture::from(resp.json().unwrap()).await.unwrap();
-    // let courses: Vec<Course> = json.into_serde().unwrap();
-    info!("resp: {:?}", json);
-
-    Ok(json.into())
-
-    // let random_float: f64 = rand::thread_rng().gen();
-    // Ok(random_float.to_string().into())
+    text
 }

@@ -1,6 +1,6 @@
 use crate::models::message::Message;
 use crate::models::prompt::PromptTemplate;
-use crate::models::sql::Sql;
+use crate::models::db::Db;
 use anyhow::{Ok, Result};
 use askama::Template;
 use openai::{
@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Chat {
     pub openai_key: String,
-    pub sql: Sql,
+    pub db: Db,
     pub text: String,
 }
 
@@ -22,19 +22,18 @@ impl Chat {
     pub fn new(&self, openai_key: String) -> Chat {
         Chat {
             openai_key,
-            sql: todo!(),
+            db: todo!(),
             text: todo!(),
         }
     }
 
     // execute_chat
-    pub async fn execute_chat(openai_key: &str, url: &str, ns: &str, text: &str) -> Result<String> {
-        println!("[do_chat]=======================>");
+    pub async fn exec_chat(openai_key: &str, db_url: &str, db_ns: &str, text: &str) -> Result<String> {
         set_key(openai_key.to_string());
 
-        let db_url = url.to_string();
-        let db_ns = ns.clone();
-        let context = Sql::query_schema(&db_url, &db_ns).await?;
+        let db_url = db_url.to_string();
+        let db_ns = db_ns.clone();
+        let context = Db::query_schema(&db_url, &db_ns).await?;
         let promptTemp = PromptTemplate { context: &context };
         let prompt = promptTemp.render()?;
         // println!("{}", prompt);
@@ -88,7 +87,7 @@ impl Default for Chat {
     fn default() -> Self {
         Chat {
             openai_key: std::env::var("OPENAI_KEY").unwrap_or_else(|_| "".to_string()),
-            sql: todo!(),
+            db: todo!(),
             text: todo!(),
         }
     }

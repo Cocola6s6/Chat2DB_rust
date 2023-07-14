@@ -1,2 +1,2 @@
 pub mod chat;
-pub mod sql;
+pub mod db;

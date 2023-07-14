@@ -3,18 +3,19 @@ use db_schema::PgSchema;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
+use tracing::info;
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Sql {
-    pub url: String,
-    pub ns: String,
+pub struct Db {
+    pub db_url: String,
+    pub db_ns: String,
 }
 
-impl Sql {
+impl Db {
     // query_schema
-    pub async fn query_schema(url: &str, ns: &str) -> Result<String> {
-        let pool = PgPool::connect(url).await?;
-        let schema = PgSchema::new(ns);
+    pub async fn query_schema(db_url: &str, db_ns: &str) -> Result<String> {
+        let pool = PgPool::connect(db_url).await?;
+        let schema = PgSchema::new(db_ns);
 
         let enums = schema.get_enums(&pool).await?.join("\n");
         let types = schema.get_types(&pool).await?.join("\n");
@@ -39,9 +40,9 @@ impl Sql {
     }
 
     // query_enums
-    pub async fn query_tables(url: &str, ns: &str) -> Result<Vec<String>> {
-        let pool = PgPool::connect(url).await?;
-        let schema = PgSchema::new(ns);
+    pub async fn query_tables(db_url: &str, db_ns: &str) -> Result<Vec<String>> {
+        let pool = PgPool::connect(db_url).await?;
+        let schema = PgSchema::new(db_ns);
         let tables = schema.get_tables(&pool).await?;
 
         let vec = tables
@@ -61,10 +62,10 @@ impl Sql {
     }
 
     // execute_sql
-    pub async fn execute_sql(url: &str, sql: &str, code: u32) -> Result<()> {
+    pub async fn exec_sql(db_url: &str, sql: &str, code: u32) -> Result<()> {
         match code {
             2 => {
-                let pool = PgPool::connect(url).await?;
+                let pool = PgPool::connect(db_url).await?;
                 let result = sqlx::query(sql).execute(&pool).await?;
                 println!("{:#?}", result);
             }
@@ -78,11 +79,11 @@ impl Sql {
 }
 
 // override default values with environment variables
-impl Default for Sql {
-    fn default() -> Sql {
-        Sql {
-            url: std::env::var("DATABASE_URL").unwrap_or_else(|_| "".to_string()),
-            ns: std::env::var("DATABASE_NS").unwrap_or_else(|_| "".to_string()),
+impl Default for Db {
+    fn default() -> Db {
+        Db {
+            db_url: std::env::var("DATABASE_URL").unwrap_or_else(|_| "".to_string()),
+            db_ns: std::env::var("DATABASE_NS").unwrap_or_else(|_| "".to_string()),
         }
     }
 }

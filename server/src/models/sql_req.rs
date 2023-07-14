@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct TableReq {
+pub struct SqlReq {
     pub db_url: String,
-    pub db_ns: String,
+    pub sql: String,
 }
 

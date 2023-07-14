@@ -52,10 +52,30 @@
                 Ask
             </button>
         </div>
+        <div class="grid gap-6 mb-6 md:grid-cols-2">
+            <button id="exec_btn"
+                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                Exec
+            </button>
+        </div>
+        <div class="grid gap-6 mb-6 md:grid-cols-2">
+            <button id="query_tables_btn"
+                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                Tables
+            </button>
+        </div>
     </div>
     <div>
-        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">RESULT:</label>
-        <p id="output"></p>
+        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">CHAT_RESULT:</label>
+        <p id="chat_output"></p>
+    </div>
+    <div>
+        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">DB_RESULT:</label>
+        <p id="db_output"></p>
+    </div>
+    <div>
+        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">TABLES_RESULT:</label>
+        <p id="tables_output"></p>
     </div>
 </body>
 

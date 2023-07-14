@@ -1,1 +1,2 @@
-pub mod chatgpt;
+pub mod chat;
+pub mod db;

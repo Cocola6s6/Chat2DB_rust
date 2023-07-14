@@ -1,5 +1,5 @@
 use server::models::chat::Chat;
-use server::models::sql::Sql;
+use server::models::db::Db;
 
 use dotenv::dotenv;
 
@@ -7,11 +7,11 @@ use dotenv::dotenv;
 async fn main() {
     dotenv().unwrap();
 
-    let sql: Sql = Sql::default();
+    let sql: Db = Db::default();
     let chat = Chat::default();
     let openai_key = chat.openai_key.clone();
-    let url = sql.url.clone();
-    let ns = sql.ns.clone();
+    let url = sql.db_url.clone();
+    let ns = sql.db_ns.clone();
     let text = chat.text.clone();
-    Chat::execute_chat(&openai_key, &url, &ns, &text).await.unwrap();
+    Chat::exec_chat(&openai_key, &url, &ns, &text).await.unwrap();
 }

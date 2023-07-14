@@ -1,5 +1,5 @@
 use crate::models::chat::Chat;
-use crate::models::sql::Sql;
+use crate::models::db::Db;
 use crate::AppState;
 use anyhow::Result;
 use rand::Rng;
@@ -35,6 +35,7 @@ pub fn Connection<G: Html>(ctx: Scope<'_>) -> View<G> {
     }
 }
 
+// 监听按钮点击事件
 pub fn button_event_listener<'a>(
     ctx: Scope<'_>,
     event: &str,
@@ -55,6 +56,7 @@ pub fn button_event_listener<'a>(
     });
 }
 
+// 设置上下文Appstate
 pub async fn set_state(ctx: Scope<'_>) {
     let window = web_sys::window().expect("no global window exists");
     let document = window.document().expect("no global document exists");
@@ -80,9 +82,9 @@ pub async fn set_state(ctx: Scope<'_>) {
 
     let chat = Chat { openai_key };
 
-    let sql = Sql {
-        url: db_url,
-        ns: db_ns,
+    let sql = Db {
+        db_url,
+        db_ns,
     };
 
     let state = use_context::<AppState>(ctx);
@@ -91,56 +93,5 @@ pub async fn set_state(ctx: Scope<'_>) {
         chat, sql
     );
     state.chat.set(chat);
-    state.sql.set(sql);
-}
-
-pub async fn chat(
-    openai_key: String,
-    db_url: String,
-    db_ns: String,
-    text: String,
-) -> Result<JsValue> {
-    // info!("[chat]======================>");
-    // // 创建Request请求
-    // let mut opts = RequestInit::new();
-    // opts.method("POST");
-    // opts.mode(RequestMode::Cors);
-
-    // let str_json = format!(
-    //     r#"
-    //     {{
-    //         "openai_key": "{}",
-    //         "sql": {{
-    //             "url": "{}",
-    //             "ns": "{}"
-    //         }},
-    //         "text": "{}"
-    //     }}
-    //     "#,
-    //     openai_key, db_url, db_ns, text
-    // ); // 注意类型一定要对应，否则会"400 BadRequest"
-    // opts.body(Some(&JsValue::from_str(str_json.as_str())));
-    // // opts.body(Some(&JsValue::from_str(text.as_str())));
-    // let url = format!("http://localhost:5000/chat/chatgpt");
-    // let request = Request::new_with_str_and_init(&url, &opts).unwrap();
-    // // request.headers().set("Content-Type", "application/json");
-    // // request.headers().set("Accept", "application/json");
-
-    // // 使用web_sys调用window的api发送请求
-    // let window = web_sys::window()
-    //     .ok_or("no windows exists".to_string())
-    //     .unwrap();
-    // let resp_value = JsFuture::from(window.fetch_with_request(&request))
-    //     .await
-    //     .unwrap();
-
-    // // 解析Response响应
-    // assert!(resp_value.is_instance_of::<Response>());
-    // let resp: Response = resp_value.dyn_into().unwrap();
-    // let json = JsFuture::from(resp.json().unwrap()).await.unwrap();
-    // // let courses: Vec<Course> = json.into_serde().unwrap();
-    // info!("resp: {:?}", json);
-
-    let random_float: f64 = rand::thread_rng().gen();
-    Ok(random_float.to_string().into())
+    state.db.set(sql);
 }
