@@ -6,8 +6,8 @@
 
 * askama，可以在文件中使用变量，用来编写 prompt
 * openai，调用 openai 的接口
-* db_schema，查看数据库 schema，最为 prompt 中的上下文提示
-* sqlx，查询数据库
+* db_schema，查看数据库的 schema，作为 prompt 中的上下文提示
+* sqlx，查询数据库数据
 * actix-web，创建 web 服务
 
 
