@@ -1,5 +1,5 @@
 use sycamore::prelude::*;
-use client::components::app::App;
+use chat2db_client::components::app::App;
 
 fn main() {
     println!("Hello, world!");

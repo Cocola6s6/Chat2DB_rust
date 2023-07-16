@@ -1,11 +1,10 @@
 use actix_cors::Cors;
 use actix_web::{http, web, App, HttpServer};
-use server::models::db;
 use std::io;
-use server::routers::chat::chat_router;
-use server::routers::chat::hello;
-use server::routers::db::sql_router;
-use server::routers::db::table_router;
+use chat2db_server::routers::chat::chat_router;
+use chat2db_server::routers::chat::hello;
+use chat2db_server::routers::db::sql_router;
+use chat2db_server::routers::db::table_router;
 
 #[actix_rt::main]
 async fn main() -> io::Result<()> {

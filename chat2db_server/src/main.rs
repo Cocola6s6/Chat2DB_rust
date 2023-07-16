@@ -1,5 +1,5 @@
-use server::models::chat::Chat;
-use server::models::db::Db;
+use chat2db_server::models::chat::Chat;
+use chat2db_server::models::db::Db;
 
 use dotenv::dotenv;
 

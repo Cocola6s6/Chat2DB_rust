@@ -9,4 +9,4 @@ edition = "2021"
 
 
 [workspace]
-members = ["server", "client"]
+members = ["chat2db_server", "chat2db_client"]

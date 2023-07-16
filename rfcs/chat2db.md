@@ -233,3 +233,4 @@ N/A
 
 
 #### 5、CLI 还没有实现，需要实现一个 CLI。1）可以直接启动 server 和 client； 2）可以直接执行 exec_chat、query_tables、exec_sql 功能。
+* 已完成
