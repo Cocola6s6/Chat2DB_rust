@@ -230,3 +230,6 @@ N/A
 #### 4、server 与 client 之间交互的数据结构没有统一，有的用 String、有的用 JsValue。后续统一用 actix crate 的封装数据结构，参数：post 请求用 web::Json，get 请求用 web::Query，响应都用 HttpResponse。
 
 * 已完成
+
+
+#### 5、CLI 还没有实现，需要实现一个 CLI。1）可以直接启动 server 和 client； 2）可以直接执行 exec_chat、query_tables、exec_sql 功能。
