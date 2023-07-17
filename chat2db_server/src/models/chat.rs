@@ -92,3 +92,21 @@ impl Default for Chat {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tokio::test;
+    use dotenv::dotenv;
+
+    #[test]
+    async fn test_exec_chat() {
+        dotenv().unwrap();
+        let openai_key = std::env::var("OPENAI_KEY").unwrap_or_else(|_| "".to_string());
+        let db_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| "".to_string());
+        let db_ns = std::env::var("DATABASE_NS").unwrap_or_else(|_| "".to_string());
+        let text = "Hello?";
+        let resp = Chat::exec_chat(&openai_key, &db_url, &db_ns, &text).await.unwrap();
+        println!("resp={:#?}", resp);
+    }
+}
