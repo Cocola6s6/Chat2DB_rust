@@ -1,7 +1,7 @@
 use crate::handlers::chat::chat_handler;
 use crate::handlers::chat::hello_handler;
 use crate::models::chat_req::ChatReq;
-use actix_web::{get, post, web, Responder};
+use actix_web::{get, post, web, HttpResponse, Responder};
 
 // router2
 // curl -X POST localhost:5000/courses/insert -H "Content-Type: application/json" -d '{"id": 4, "teacher_id": 1, "course_name": "First course"}'
@@ -20,7 +20,12 @@ async fn hello() -> impl Responder {
 }
 
 #[post("/chat/execChat")]
-async fn chat_router(req: web::Json<ChatReq>) -> impl Responder {
+async fn chat_router(req: web::Json<ChatReq>) -> HttpResponse {
     println!("[chat_router]=========================>{:?}", req);
-    chat_handler(&req.openai_key, &req.sql.db_url, &req.sql.db_ns, &req.text).await
+    let resp = chat_handler(&req.openai_key, &req.sql.db_url, &req.sql.db_ns, &req.text).await;
+
+    match resp {
+        Ok(resp) => resp,
+        Err(e) => HttpResponse::InternalServerError().json(e.to_string()),
+    }
 }

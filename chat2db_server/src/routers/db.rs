@@ -1,19 +1,29 @@
 use crate::handlers::db::sql_handler;
 use crate::handlers::db::table_handler;
-use crate::models::tables_req::TablesReq;
 use crate::models::sql_req::SqlReq;
-use actix_web::{web, get, Responder, post};
-
+use crate::models::tables_req::TablesReq;
+use actix_web::{get, post, web, HttpResponse};
 
 #[post("/db/execSql")]
-async fn sql_router(req: web::Json<SqlReq>) -> impl Responder {
+async fn sql_router(req: web::Json<SqlReq>) -> HttpResponse {
     println!("[sql_router]=========================>{:?}", req);
-    sql_handler(&req.db_url, &req.sql, 2).await
+    let resp = sql_handler(&req.db_url, &req.sql, 2).await;
+
+    match resp {
+        Ok(resp) => resp,
+        Err(e) => HttpResponse::InternalServerError().json(e.to_string()),
+    }
 }
 
 // curl -X GET localhost:5000/chat/table?ns=public&url=postgres://postgres:postgres@45.128.222.100:15432
 #[get("/db/queryTables")]
-async fn table_router(req: web::Query<TablesReq>) -> impl Responder {
+async fn table_router(req: web::Query<TablesReq>) -> HttpResponse {
     println!("[table_router]=========================>{:?}", req);
-    table_handler(&req.db_url, &req.db_ns).await
+    let resp = table_handler(&req.db_url, &req.db_ns).await;
+
+    println!("{:?}", HttpResponse::Ok().json("value"));
+    match resp {
+        Ok(resp) => resp,
+        Err(e) => HttpResponse::InternalServerError().json(e.to_string()),
+    }
 }

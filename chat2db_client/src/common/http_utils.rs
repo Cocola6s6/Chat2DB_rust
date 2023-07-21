@@ -34,10 +34,20 @@ impl HttpUtils {
 
         assert!(resp_value.is_instance_of::<Response>());
         let resp: Response = resp_value.dyn_into().unwrap();
-        let resp = JsFuture::from(resp.json().unwrap()).await.unwrap();
-        info!("resp: {:?}", resp);
+        
+        match resp.status() {
+            200 => {
+                let resp = JsFuture::from(resp.json().unwrap()).await.unwrap();
+                info!("resp: {:?}", resp);
+        
+                Ok(resp)
+            },
+            _ => {
+                let err = format!("status: {}, status_text: {}", resp.status(), resp.status_text());
+                return Err(anyhow::anyhow!(err));
+            }
+        }
 
-        Ok(resp)
     }
 
     pub async fn post(
@@ -70,9 +80,18 @@ impl HttpUtils {
 
         assert!(resp_value.is_instance_of::<Response>());
         let resp: Response = resp_value.dyn_into().unwrap();
-        let resp = JsFuture::from(resp.json().unwrap()).await.unwrap();
-        info!("resp: {:?}", resp);
 
-        Ok(resp)
+        match resp.status() {
+            200 => {
+                let resp = JsFuture::from(resp.json().unwrap()).await.unwrap();
+                info!("resp: {:?}", resp);
+        
+                Ok(resp)
+            },
+            _ => {
+                let err = format!("status: {}, status_text: {}", resp.status(), resp.status_text());
+                return Err(anyhow::anyhow!(err));
+            }
+        }
     }
 }

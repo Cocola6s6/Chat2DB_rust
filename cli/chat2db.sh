@@ -33,7 +33,7 @@ function start_client() {
 # 停止 server
 function stop_server() {
     echo "Stopping chat server..."
-    pid=$(pgrep -f "cargo run --bin chat")
+    pid=$(ps aux | grep "cargo run --bin server" | grep -v grep | awk '{print $2}')
     if [ -n "$pid" ]; then
         kill "$pid"
     else
@@ -44,7 +44,7 @@ function stop_server() {
 # 停止 client
 function stop_client() {
     echo "Stopping chat client..."
-    pid=$(pgrep -f "trunk serve")
+    pid=$(ps aux | grep "trunk serve" | grep -v grep | awk '{print $2}')
     if [ -n "$pid" ]; then
         kill "$pid"
     else
@@ -72,6 +72,32 @@ function query_tables() {
     cargo run --bin db
 }
 
+## 安装单个服务
+function startSingle() {
+    case $1 in
+    server)
+        start_server
+        ;;
+    client)
+        start_client
+        ;;
+    *) ;;
+    esac
+}
+
+## 安装单个服务
+function stopSingle() {
+    case $1 in
+    server)
+        stop_server
+        ;;
+    client)
+        stop_client
+        ;;
+    *) ;;
+    esac
+}
+
 # 执行命令
 case $1 in
 start)
@@ -79,6 +105,12 @@ start)
     ;;
 stop)
     stop
+    ;;
+start_one)
+    startSingle $2
+    ;;
+stop_one)
+    stopSingle $2
     ;;
 exec_chat)
     exec_chat
