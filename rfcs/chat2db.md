@@ -174,6 +174,21 @@ sql_req {
 
 
 
+### 一、组件设计（优化：使用 sycamore 方式）
+
+前面使用 html 的方式实现了，现在改用 sycamore 的方式实现。
+
+#### 1、input 组件的值的绑定
+* 使用 bind:value=text_signal 将 input 组件的值和 text_signal
+绑定，当 input 组件的值发生变化的时候，text_signal 的值也会发生变化。
+* 就不用疯狂使用 web-sys 去获取 html 中的 dom 元素了。
+
+#### 2、button 组件的点击事件
+* 使用 on:click=callback 将 button 组件的点击事件和 callback 绑定，当 button 组件被点击的时候，callback 会被调用。
+* 就不用疯狂使用 web-sys 去设置 button 的监听事件了。
+
+
+
 ### 二、模块设计
 
 分为 chat 模块 和 db 模块。

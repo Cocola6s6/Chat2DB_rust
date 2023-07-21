@@ -8,7 +8,7 @@ use tracing::info;
 pub struct Chat {
     pub openai_key: String,
 }
-// TODO 将http请求抽象出来
+
 impl Chat {
     pub async fn exec_chat(
         openai_key: String,
