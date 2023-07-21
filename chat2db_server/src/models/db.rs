@@ -87,3 +87,40 @@ impl Default for Db {
         }
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tokio::test;
+    use dotenv::dotenv;
+
+    #[test]
+    async fn test_query_schema() {
+        dotenv().unwrap();
+        let db_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| "".to_string());
+        let db_ns = std::env::var("DATABASE_NS").unwrap_or_else(|_| "".to_string());
+        let resp = Db::query_schema(&db_url, &db_ns).await.unwrap();
+        println!("resp={:#?}", resp);
+    }
+
+    #[test]
+    async fn test_query_tables() {
+        dotenv().unwrap();
+        let db_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| "".to_string());
+        let db_ns = std::env::var("DATABASE_NS").unwrap_or_else(|_| "".to_string());
+        let resp = Db::query_tables(&db_url, &db_ns).await.unwrap();
+        println!("resp={:#?}", resp);
+    }
+
+    #[test]
+    async fn test_exec_sql() {
+        dotenv().unwrap();
+        let db_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| "".to_string());
+        let sql = "select * from test";
+        let code = 2;
+        let resp = Db::exec_sql(&db_url, &sql, code).await.unwrap();
+        println!("resp={:#?}", resp);
+    }
+}
+
