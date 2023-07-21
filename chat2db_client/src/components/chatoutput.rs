@@ -1,43 +1,47 @@
 use sycamore::prelude::*;
+use tracing::info;
 
 #[derive(Props)]
 pub struct Props<'a> {
     pub chat_output_text: &'a Signal<String>,
     pub db_output_text: &'a Signal<String>,
-    pub tables_output_text: &'a Signal<Vec<String>>, 
+    pub tables_output_text: &'a Signal<Vec<String>>,
 }
 
 // output 组件
 #[component]
 pub async fn Chatoutput<'a, G: Html>(ctx: Scope<'a>, props: Props<'a>) -> View<G> {
-    create_memo(ctx, move || {
-        // chat 内容展示
-        let window = web_sys::window().unwrap();
-        let document = window.document().expect("no global document exists");
-        let chat_output = document.get_element_by_id("chat_output").unwrap();
-        chat_output.set_inner_html(&props.chat_output_text.get());
+    // let chat_output_text = props.chat_output_text.get().to_string();
+    // let db_output_text = props.db_output_text.get().to_string();
+    // let tables_output_text = props.tables_output_text.get().join("<br>").to_string();
+
+    let chat_output_text = create_memo(ctx, move || {
+        let chat_output_text = props.chat_output_text.get().to_string();
+        chat_output_text
     });
 
-    create_memo(ctx, move || {
-        // db 内容展示
-        let window = web_sys::window().unwrap();
-        let document = window.document().expect("no global document exists");
-        let db_output = document.get_element_by_id("db_output").unwrap();
-        db_output.set_inner_html(&props.db_output_text.get());
+    let db_output_text = create_memo(ctx, move || {
+        let db_output_text = props.db_output_text.get().to_string();
+        db_output_text
     });
 
-    create_memo(ctx, move || {
-        // db 内容展示
-        let window = web_sys::window().unwrap();
-        let document = window.document().expect("no global document exists");
-        let tables_output = document.get_element_by_id("tables_output").unwrap();
-        tables_output.set_inner_html(&props.tables_output_text.get().join("<br>"));
+    let tables_output_text = create_memo(ctx, move || {
+        let tables_output_text = props.tables_output_text.get().join("<br>").to_string();
+        tables_output_text
     });
 
-    // TODO 考虑是否使用sycamore组件显示内容，现在是获取dom元素直接设置内容
     view! {ctx,
-        // div {
-        //     (*props.output_text.get())
-        // }
+        div{
+            label(class="block mb-2 text-sm font-medium text-gray-900 dark:text-white") {
+                (format!("CHAT_RESULT: {}", chat_output_text))
+            }
+            label(class="block mb-2 text-sm font-medium text-gray-900 dark:text-white") {
+                (format!("DB_RESULT: {}", db_output_text))
+            }
+            // TODO 这里有问题，没有换行显示
+            label(class="block mb-2 text-sm font-medium text-gray-900 dark:text-white") {
+                (format!("TABLES_RESULT: {}", tables_output_text))
+            }
+        }
     }
 }

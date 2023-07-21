@@ -3,89 +3,83 @@ use crate::models::db::Db;
 use crate::AppState;
 use anyhow::Result;
 use rand::Rng;
-use std::mem::transmute;
 use sycamore::futures::spawn_local_scoped;
 use sycamore::prelude::*;
 use tracing::info;
-use wasm_bindgen::prelude::Closure;
-use wasm_bindgen::{JsCast, JsValue};
-use web_sys::{EventTarget, HtmlInputElement};
 
 // connection 组件
 #[component]
 pub fn Connection<G: Html>(ctx: Scope<'_>) -> View<G> {
-    let window = web_sys::window().unwrap();
-    let document = window.document().expect("no global document exists");
+    let openai_key_signal = create_signal(ctx, String::from(""));
+    let db_url_signal = create_signal(ctx, String::from(""));
+    let db_ns_signal = create_signal(ctx, String::from(""));
 
-    let connection_btn: EventTarget = document.get_element_by_id("connection_btn").unwrap().into();
-    button_event_listener(
-        ctx,
-        "click",
-        connection_btn,
-        Box::new(move || {
-            info!("[button_event_listener_2]=======================>");
-            spawn_local_scoped(ctx, async move {
-                set_state(ctx).await;
-            })
-        }),
-    );
+    let connection_btn_event = move |_| {
+        info!("[button_event_listener_2]=======================>");
+        spawn_local_scoped(ctx, async move {
+            set_state(ctx, openai_key_signal.get().to_string(), db_url_signal.get().to_string(), db_ns_signal.get().to_string()).await;
+        })
+    };
 
     view! {ctx,
         // todo!();
+        form () {
+            div(class="grid gap-6 mb-6 md:grid-cols-2") {
+                div(class="mb-6") {
+                    label(class="block mb-2 text-sm font-medium text-gray-900 dark:text-white") {
+                        "OPENAI_KEY:"
+                    }
+                    input(
+                        bind:value=openai_key_signal,
+                        type="text", id="openai_key",
+                        class="block mx-4 p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    ) {
+                    }
+                }
+
+                div(class="mb-6") {
+                    label(class="block mb-2 text-sm font-medium text-gray-900 dark:text-white") {
+                        "DB_URL:"
+                    }
+                    input(
+                        bind:value=db_url_signal,
+                        type="text",
+                        id="db_url",
+                        class="block mx-4 p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    ) {
+                    }
+                }
+
+                div(class="mb-6") {
+                    label(class="block mb-2 text-sm font-medium text-gray-900 dark:text-white") {
+                        "DB_NS:"
+                    }
+                    input(
+                        bind:value=db_ns_signal,
+                        type="text",
+                         id="db_ns",
+                        class="block mx-4 p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    ) {
+                    }
+                }
+            }
+        }
+        div(class="grid gap-6 mb-6 md:grid-cols-2") {
+            button(
+                on:click=connection_btn_event,
+                id="connection_btn",
+                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            ) {
+                "Connection"
+            }
+        }
     }
 }
 
-// 监听按钮点击事件
-pub fn button_event_listener<'a>(
-    ctx: Scope<'_>,
-    event: &str,
-    button: EventTarget,
-    callback: Box<dyn Fn() + 'a>,
-) {
-    let handler: Box<dyn Fn() + 'static> = unsafe { transmute(callback) };
-    let callback = Closure::wrap(handler); // 使用 wasm Closure 可以将函数转为 JsValue
-
-    button
-        .add_event_listener_with_callback(event, callback.as_ref().unchecked_ref())
-        .expect("监听请求发送失败");
-
-    // on_cleanup 是一个 hooks 函数，当组件移除时触发
-    on_cleanup(ctx, move || {
-        info!("ctx on_cleanup]===================>");
-        drop(callback);
-    });
-}
-
 // 设置上下文Appstate
-pub async fn set_state(ctx: Scope<'_>) {
-    let window = web_sys::window().expect("no global window exists");
-    let document = window.document().expect("no global document exists");
-
-    let openai_key = document
-        .get_element_by_id("openai_key")
-        .unwrap()
-        .dyn_into::<HtmlInputElement>()
-        .unwrap()
-        .value();
-    let db_url = document
-        .get_element_by_id("db_url")
-        .unwrap()
-        .dyn_into::<HtmlInputElement>()
-        .unwrap()
-        .value();
-    let db_ns = document
-        .get_element_by_id("db_ns")
-        .unwrap()
-        .dyn_into::<HtmlInputElement>()
-        .unwrap()
-        .value();
-
+pub async fn set_state(ctx: Scope<'_>, openai_key: String, db_url: String, db_ns: String) {
     let chat = Chat { openai_key };
-
-    let sql = Db {
-        db_url,
-        db_ns,
-    };
+    let sql = Db { db_url, db_ns };
 
     let state = use_context::<AppState>(ctx);
     info!(

@@ -10,7 +10,6 @@ pub struct Db {
     pub db_ns: String,
 }
 
-// TODO 将http请求抽象出来
 impl Db {
     pub async fn exec_sql(db_url: String, sql: String) -> Result<String> {
         info!("[exec_sql]======================>{:?},{:?}", db_url, sql);
