@@ -3,9 +3,6 @@ use anyhow::{Ok, Result};
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use tracing::info;
-use wasm_bindgen::{JsCast, JsValue};
-use wasm_bindgen_futures::JsFuture;
-use web_sys::{Headers, Request, RequestInit, RequestMode, Response};
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct Chat {
