@@ -19,6 +19,7 @@ async fn hello() -> impl Responder {
     hello_handler().await
 }
 
+// curl -X POST localhost:5000/chat/execChat -H "Content-Type: application/json" -d '{"openai_key":"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","sql":{"db_url":"postgres://postgres:postgres@45.128.222.100:15432","db_ns":"public"},"text":"Hello?"}'
 #[post("/chat/execChat")]
 async fn chat_router(req: web::Json<ChatReq>) -> HttpResponse {
     println!("[chat_router]=========================>{:?}", req);
