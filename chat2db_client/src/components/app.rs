@@ -9,10 +9,12 @@ pub async fn App<G: Html>(ctx: Scope<'_>) -> View<G> {
     init(ctx).await;
 
     view! {ctx,
-        div {
+        // TODO 删除：连接组件, 背景颜色为红色
+        div (class="bg-red-200") {
             Connection()
         }
-        div {
+        // TODO 删除：聊天组件, 背景颜色为绿色
+        div (class="bg-green-200") {
             Chatinput()
         }
     }

@@ -23,21 +23,21 @@ pub fn Connection<G: Html>(ctx: Scope<'_>) -> View<G> {
 
     view! {ctx,
         // todo!();
-        form () {
-            div(class="grid gap-6 mb-6 md:grid-cols-2") {
-                div(class="mb-6") {
+        form (class="gap-6 mb-6 md:grid-cols-2") {
+            div() {
+                div() {
                     label(class="block mb-2 text-sm font-medium text-gray-900 dark:text-white") {
                         "OPENAI_KEY:"
                     }
                     input(
                         bind:value=openai_key_signal,
                         type="text", id="openai_key",
-                        class="block mx-4 p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        class="block mx-4 p-2.5 w-1/2 text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     ) {
                     }
                 }
 
-                div(class="mb-6") {
+                div() {
                     label(class="block mb-2 text-sm font-medium text-gray-900 dark:text-white") {
                         "DB_URL:"
                     }
@@ -45,12 +45,12 @@ pub fn Connection<G: Html>(ctx: Scope<'_>) -> View<G> {
                         bind:value=db_url_signal,
                         type="text",
                         id="db_url",
-                        class="block mx-4 p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        class="block mx-4 p-2.5 w-1/2 text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     ) {
                     }
                 }
 
-                div(class="mb-6") {
+                div() {
                     label(class="block mb-2 text-sm font-medium text-gray-900 dark:text-white") {
                         "DB_NS:"
                     }
@@ -58,12 +58,13 @@ pub fn Connection<G: Html>(ctx: Scope<'_>) -> View<G> {
                         bind:value=db_ns_signal,
                         type="text",
                          id="db_ns",
-                        class="block mx-4 p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        class="block mx-4 p-2.5 w-1/2 text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     ) {
                     }
                 }
             }
         }
+
         div(class="grid gap-6 mb-6 md:grid-cols-2") {
             button(
                 on:click=connection_btn_event,

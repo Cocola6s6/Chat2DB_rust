@@ -9,4 +9,4 @@ edition = "2021"
 
 
 [workspace]
-members = ["chat2db_server", "chat2db_client"]
+members = ["chat2db_server", "chat2db_client", "chat2db_client/src-tauri"]

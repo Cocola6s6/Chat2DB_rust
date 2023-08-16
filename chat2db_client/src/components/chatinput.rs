@@ -20,7 +20,6 @@ pub async fn Chatinput<G: Html>(ctx: Scope<'_>) -> View<G> {
     let db_ouput_signal = create_signal(ctx, String::from(""));
     let query_tables_ouput_signal = create_signal(ctx, Vec::new());
 
-
     let ask_btn_event = move |_| {
         spawn_local_scoped(ctx, async move {
             // 1、获取输入框内容
@@ -67,7 +66,8 @@ pub async fn Chatinput<G: Html>(ctx: Scope<'_>) -> View<G> {
     };
 
     view! {ctx,
-            div {
+            // TODO 删除：表单组件，背景颜色为黄色
+            div (class="bg-yellow-200") {
                 form() {
                     label(class="block mb-2 text-sm font-medium text-gray-900 dark:text-white") {
                         "YOUR MESSAGE:"
@@ -77,6 +77,7 @@ pub async fn Chatinput<G: Html>(ctx: Scope<'_>) -> View<G> {
                             bind:value=text_signal,
                             id="text",
                             rows="1",
+                            style="height: 256px;",
                             class="block mx-4 p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500",
                             placeholder="Your message...") {
                         }
@@ -105,11 +106,12 @@ pub async fn Chatinput<G: Html>(ctx: Scope<'_>) -> View<G> {
                         class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800") {
                         "Tables"
                     }
+                }
             }
 
-            div {
+            // TODO 删除：显示组件，背景颜色为紫色
+            div (class="bg-purple-200") {
                 Chatoutput(chat_output_text=chat_ouput_signal, db_output_text=db_ouput_signal, tables_output_text=query_tables_ouput_signal)
             }
-        }
     }
 }

@@ -7,13 +7,13 @@
 
 ## Summary
 
-参考 [Chat2DB](https://github.com/chat2db/Chat2DB) 的效果，使用 chatgpt 进行自然语言翻译，然后对数据库进行操作，使用 rust 语言实现的 web 应用。
+参考 [Chat2DB](https://github.com/chat2db/Chat2DB) 的效果，使用 chatgpt 进行自然语言翻译，然后对数据库进行操作，使用 rust 语言实现的 web 应用、桌面应用。
 
 
 
 ## Motivation
 
-* 整合已经学习的 rust crate，sycamore、sqlx、openai、wasm、actix-web 等。
+* 整合已经学习的 rust crate，sycamore、sqlx、openai、wasm、actix-web、tauri 等。
 * [Chat2DB](https://github.com/chat2db/Chat2DB) 是 java 语言实现的，基于此实现一个 rust 版本。
 
 

@@ -39,7 +39,7 @@ impl Db {
         Ok(all)
     }
 
-    // query_enums
+    // query_tables
     pub async fn query_tables(db_url: &str, db_ns: &str) -> Result<Vec<String>> {
         let pool = PgPool::connect(db_url).await?;
         let schema = PgSchema::new(db_ns);
@@ -65,6 +65,7 @@ impl Db {
     pub async fn exec_sql(db_url: &str, sql: &str, code: u32) -> Result<()> {
         match code {
             2 => {
+                // 得到查询结果，所有的字段和值
                 let pool = PgPool::connect(db_url).await?;
                 let result = sqlx::query(sql).execute(&pool).await?;
                 println!("{:#?}", result);
