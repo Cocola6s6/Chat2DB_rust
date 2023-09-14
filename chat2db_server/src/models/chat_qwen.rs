@@ -2,7 +2,7 @@ use crate::models::db::Db;
 use crate::models::prompt::PromptTemplate;
 use anyhow::{Ok, Result};
 use askama::Template;
-use reqwest::{header::AUTHORIZATION, Client, Method, RequestBuilder, Response};
+use reqwest::{ Client, Method};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -35,12 +35,7 @@ pub struct ChatQwen {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Input {
-    pub messages: Messages,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Messages {
-    pub message: Vec<Message>,
+    pub messages: Vec<Message>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -58,15 +53,14 @@ pub enum Role {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct ChatQwenResponse  {
+pub struct ChatQwenResponse {
     pub output: Output,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Output  {
+pub struct Output {
     pub text: String,
 }
-
 
 impl ChatQwen {
     pub fn new(&self, openai_key: String) -> ChatQwen {
@@ -83,6 +77,7 @@ impl ChatQwen {
         db_ns: &str,
         text: &str,
     ) -> Result<String> {
+        // 1、准备prompt
         let db_url = db_url.to_string();
         let db_ns = db_ns.clone();
         let context = Db::query_schema(&db_url, &db_ns).await?;
@@ -102,11 +97,13 @@ impl ChatQwen {
 
         let chat_qwen = ChatQwen {
             model: "qwen-v1".to_string(),
-            input: Input { messages: Messages { message: messages } },
+            input: Input { messages },
         };
-        println!("chat_qwen={:?}", chat_qwen);
-        println!("chat_qwen_json={:?}", json!(chat_qwen));
+        // println!("chat_qwen={:?}", chat_qwen);
+        println!("chat_qwen_json={}", json!(&chat_qwen));
 
+
+        // 2、请求API
         let client = Client::new();
         let request = client.request(Method::POST, BASE_URL);
 
@@ -116,6 +113,8 @@ impl ChatQwen {
             .send()
             .await?;
 
+
+        // 3、解析响应
         let resp: ChatQwenResponse = resp.json().await?;
         println!("{:?}", resp);
 
@@ -133,7 +132,7 @@ mod tests {
         let openai_key = "sk-34a5ce02952b436bb955dab064177c20".to_string();
         let db_url = "postgres://postgres:postgres@45.128.222.100:15432".to_string();
         let db_ns = "public".to_string();
-        let text = "select * from public.test";
+        let text = "查询test所有数据";
         let resp = ChatQwen::exec_chat(&openai_key, &db_url, &db_ns, &text)
             .await
             .unwrap();

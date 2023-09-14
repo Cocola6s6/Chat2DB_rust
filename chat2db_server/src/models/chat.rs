@@ -45,12 +45,6 @@ impl Chat {
             function_call: None,
         }];
 
-        // print!("User: ");
-        // stdout().flush()?;
-
-        let mut user_message_content = String::new();
-
-        // stdin().read_line(&mut user_message_content)?;
         messages.push(ChatCompletionMessage {
             role: ChatCompletionMessageRole::User,
             content: Some(text.to_string()),
@@ -74,9 +68,6 @@ impl Chat {
 
         let json_str = messages.last().unwrap().content.clone().unwrap();
         let message: Message = serde_json::from_str(&json_str)?;
-
-        // TODO 执行sql操作后续放到client端执行
-        // Sql::execute_sql(&db_url, &message.result, message.code).await?;
 
         Ok(message.result)
     }
