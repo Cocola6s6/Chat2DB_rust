@@ -4,8 +4,8 @@ use actix_web::{HttpResponse, Responder};
 
 // sql_handler
 pub async fn sql_handler(db_url: &str, sql: &str, code: u32) -> Result<HttpResponse> {
-    let _ = Db::exec_sql(db_url, sql, code);
-    Ok(HttpResponse::Ok().json("sql_handler"))
+    let resp = Db::exec_sql(db_url, sql, code).await?;
+    Ok(HttpResponse::Ok().json(resp))
 }
 
 // table_handler

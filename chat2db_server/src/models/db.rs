@@ -1,9 +1,10 @@
+use std::collections::HashMap;
+
 use anyhow::{Ok, Result};
 use db_schema::PgSchema;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
-use tracing::info;
+use sqlx::{Column, PgPool, Row, TypeInfo};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Db {
@@ -62,20 +63,63 @@ impl Db {
     }
 
     // execute_sql
-    pub async fn exec_sql(db_url: &str, sql: &str, code: u32) -> Result<()> {
+    pub async fn exec_sql(
+        db_url: &str,
+        sql: &str,
+        code: u32,
+    ) -> Result<Vec<HashMap<String, String>>> {
+        // 声明list保存所有行数据
+        let mut list: Vec<HashMap<String, String>> = Vec::new();
+
         match code {
             2 => {
                 // 得到查询结果，所有的字段和值
                 let pool = PgPool::connect(db_url).await?;
-                let result = sqlx::query(sql).execute(&pool).await?;
-                println!("{:#?}", result);
+                let result = sqlx::query(sql).fetch_all(&pool).await?;
+
+                // 遍历查询结果的行
+                for row in result {
+                    let columns = row.columns();
+
+                    // 声明map保存行数据
+                    let mut map: HashMap<String, String> = HashMap::new();
+
+                    for (i, column) in columns.iter().enumerate() {
+                        // 获取字段名
+                        let name = column.name();
+                        let type_info = column.type_info();
+                        // println!("name={:?}, type_info={:?}", name, type_info);
+
+                        // 获取字段值
+                        // TODO 统一返回类型，使用serde_json::Value，否则会类型不匹配报错
+                        let value: serde_json::Value = match type_info.name() {
+                            "INT4" => serde_json::Value::Number(row.get::<i32, _>(i).into()),
+                            "VARCHAR" => serde_json::Value::String(row.get::<String, _>(i).into()),
+                            _ => serde_json::Value::Null,
+                        };
+
+                        // let value = row.get(i);
+
+                        let value = value.to_string().replace("\"", "");
+                        println!("name={:?}, value={:?}", name, value);
+
+                        
+                        map.insert(name.to_string(), value);
+                        
+                    }
+                    
+                    list.push(map);
+                }
+
+                println!("list={:?}", list);
             }
+
             _ => {
                 println!("");
             }
         }
 
-        Ok(())
+        return Ok(list);
     }
 }
 
@@ -89,12 +133,11 @@ impl Default for Db {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tokio::test;
     use dotenv::dotenv;
+    use tokio::test;
 
     #[test]
     async fn test_query_schema() {
@@ -124,4 +167,3 @@ mod tests {
         println!("resp={:#?}", resp);
     }
 }
-

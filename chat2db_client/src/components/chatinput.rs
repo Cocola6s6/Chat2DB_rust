@@ -2,13 +2,8 @@ use crate::components::chatoutput::Chatoutput;
 use crate::models::chat::Chat;
 use crate::models::db::Db;
 use crate::AppState;
-use std::mem::transmute;
 use sycamore::futures::spawn_local_scoped;
 use sycamore::prelude::*;
-use tracing::info;
-use wasm_bindgen::prelude::Closure;
-use wasm_bindgen::JsCast;
-use web_sys::{EventTarget, HtmlTextAreaElement};
 
 // input 组件
 #[component]
@@ -42,7 +37,11 @@ pub async fn Chatinput<G: Html>(ctx: Scope<'_>) -> View<G> {
     let exec_btn_event = move |_| {
         spawn_local_scoped(ctx, async move {
             // 1、获取要执行的sql
-            let sql = chat_ouput_signal.get().to_string();
+            let sql = if !chat_ouput_signal.get().is_empty() {
+                chat_ouput_signal.get().to_string()
+            } else {
+                text_signal.get().to_string()
+            };
 
             // 2、请求dbapi
             let resp = Db::exec_sql(state.db.get().db_url.clone(), sql)
