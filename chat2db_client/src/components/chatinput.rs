@@ -14,7 +14,6 @@ pub async fn Chatinput<G: Html>(ctx: Scope<'_>) -> View<G> {
     let text_signal = create_signal(ctx, String::from(""));
     let chat_ouput_signal = create_signal(ctx, String::from(""));
     let db_ouput_signal = create_signal(ctx, Vec::new());
-    let db_ouput_keys_signal = create_signal(ctx, Vec::new());
     let query_tables_ouput_signal = create_signal(ctx, Vec::new());
 
     let ask_btn_event = move |_| {
@@ -49,14 +48,6 @@ pub async fn Chatinput<G: Html>(ctx: Scope<'_>) -> View<G> {
             let resp = Db::exec_sql(state.db.get().db_url.clone(), sql)
                 .await
                 .unwrap_or_default();
-
-            let keys: Vec<String> = resp
-                .get(0)
-                .iter()
-                .flat_map(|dict| dict.keys().cloned())
-                .collect();
-            info!("Keys: {:?}", keys);
-            db_ouput_keys_signal.set(keys);
 
             db_ouput_signal.set(resp);
         })
@@ -123,7 +114,6 @@ pub async fn Chatinput<G: Html>(ctx: Scope<'_>) -> View<G> {
                 Chatoutput(
                     chat_output_text=chat_ouput_signal,
                     db_output_text=db_ouput_signal,
-                    db_ouput_keys_text=db_ouput_keys_signal,
                     tables_output_text=query_tables_ouput_signal
                 )
             }

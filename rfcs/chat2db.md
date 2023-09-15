@@ -99,9 +99,15 @@ sql_req {
 
 
 
+【准备】
+
+* serde_json crate，可以将 json 转换为 object。
+
+
+
 ### 三、设计 query_schema 功能
 
-* 使用 db_schema crate 可以获取数据库结构信息。
+* 使用 db_schema crate，可以获取数据库结构信息。
 
 
 
@@ -119,7 +125,31 @@ sql_req {
 
 
 
-【问题】怎么解析数据呢？因为 sqlx 中执行结果的返回需要一个明确的数据结构进行接收？
+【问题】怎么解析数据呢？因为 sqlx 中执行结果的返回需要一个明确的数据结构进行接收？这是这个功能的重点。
+
+以下是如何解析数据的流程：
+
+1. 获得 PgRow 数组，里面是查询回来的所有行的信息。
+2. 获得 PgRow 里面的 PgColumn 数组，里面是当前行的每一列的信息。通过它可以获得字段名、字段类型。
+3. 遍历 PgColumn 数组，通过 PgRow[index] 可以获得当前行的index列的信息，也就是字段值。
+4. 统一使用 serde_json::Value 接收字段值。
+5. 使用 map 保存字段名和字段值。
+
+
+
+【统一使用 serde_json::Value 接收字段值】
+
+~~~rust
+// 获取字段值
+// TODO 统一返回类型，使用serde_json::Value，否则会类型不匹配报错
+let value: serde_json::Value = match type_info.name() {
+  "INT4" => serde_json::Value::Number(row.get::<i32, _>(i).into()),
+  "VARCHAR" => serde_json::Value::String(row.get::<String, _>(i).into()),
+  _ => serde_json::Value::Null,
+};
+~~~
+
+
 
 
 
@@ -171,21 +201,78 @@ sql_req {
 【准备】
 
 * sycamore crate 中的 create_memo，可以监听上下文中变量的值。
+* sycamore crate 中的 create_signal，可以声明 signal 用于 view 与 view 直接的通信。
 
 
 
-### 一、组件设计（优化：使用 sycamore 方式）
+### 一、组件设计（优化：使用 sycamore 方式，局部渲染）
 
 前面使用 html 的方式实现了，现在改用 sycamore 的方式实现。
+
+需要注意的是，sycamore 组件中的元素的渲染是【局部渲染】，除了设置了 signal 监听的才会重新渲染，其它是不会变化的。
+
+
 
 #### 1、input 组件的值的绑定
 * 使用 bind:value=text_signal 将 input 组件的值和 text_signal
 绑定，当 input 组件的值发生变化的时候，text_signal 的值也会发生变化。
 * 就不用疯狂使用 web-sys 去获取 html 中的 dom 元素了。
 
+
+
 #### 2、button 组件的点击事件
 * 使用 on:click=callback 将 button 组件的点击事件和 callback 绑定，当 button 组件被点击的时候，callback 会被调用。
 * 就不用疯狂使用 web-sys 去设置 button 的监听事件了。
+
+
+
+#### 3、chatoutput 组件设计
+
+1. 接收 input 控件传过来的值，包括了：询问AI的到的 sql、执行sql得到的数据库数据列表、数据库的结构信息。
+2. 使用 create_memo 创建监听，对所有传过来的值进行监听。
+3. 将监听绑定到 sycamore 的 view 中。
+
+
+
+【问题】怎么使用 sycamore 来渲染列表数据？这是重点。
+
+渲染列表的流程如下：
+
+1. 解析得到表头数据，设置监听，渲染表头。
+2. 使用 sycamore Indexed 进行两层循环遍历数据，渲染列表数据。外层遍历所有数据得到每一行数据。内层遍历表头数据的到当前行的某一列。
+
+
+
+【注意】需要注意的是，使用 Indexed 时，内层 view 是不能直接使用外层 view 的变量的。需要通过 create_signal 声明信号值传递。
+
+~~~rust
+// 使用 Indexed 嵌套迭代渲染数据
+Indexed(
+    iterable=db_output_text,
+    view=move|ctx, entry| {
+        // TODO 注意：1）view中只能是dom元素，写方法会报错。2）内层view不能直接使用外层的变量。
+        // 需要通过信号量来通信
+        let entry_signal = create_signal(ctx, entry.clone());
+        view! { ctx,
+            tr(class="bg-white border-b dark:bg-gray-800 dark:border-gray-700") {
+                // 使用 Indexed 迭代渲染单元格数据
+                Indexed(
+                    iterable=db_output_keys_text,
+                    view=move|ctx, key| {
+                        view! { ctx,
+                            td(class="px-6 py-4") {
+                                (entry_signal.get().get(&key).unwrap())
+                            }
+                        }
+                    }
+                )
+            }
+        }
+    }
+)
+~~~
+
+
 
 
 
@@ -198,11 +285,11 @@ sql_req {
 
 
 
-### 三、设计 exec_chat 功能
+### 三、设计 exec_chat、 query_tables、exec_sql功能
 
 1. 初始化 http client。跨域配置、请求头配置、post 请求消息体配置等
 2. 发送 http 请求。
-3. 解析响应。
+3. 解析响应。使用 serde_json crate 进行数据格式化。
 
 
 
@@ -222,7 +309,46 @@ N/A
 
 ## Unresolved questions
 
-【问题】怎么解析数据呢？因为 sqlx 中执行结果的返回需要一个明确的数据结构进行接收？
+#### 【问题1】怎么解析数据呢？因为 sqlx 中执行结果的返回需要一个明确的数据结构进行接收？
+
+* 已解决，查看【设计 exec_sql 功能】中的解答。
+
+
+
+#### 【问题2】信号量监听问题
+
+观察以下两段代码，同样是设置监听信号量，为什么第二段代码会存在问题，列表没有渲染出来？
+
+* 第二段代码列表渲染是监听的是 db_output_keys_text 的变化而变化。按理来说，db_output_keys_text 是根据 db_output_text 计算得来的，db_output_text 变化了 db_output_keys_text 也会变化才对。
+
+
+
+第一段如下：
+
+~~~rust
+let db_output_keys_text = create_memo(ctx, move || props
+        .db_output_text
+        .get()
+        .get(0)
+        .iter()
+        .flat_map(|dict| dict.keys().cloned())
+        .collect());
+~~~
+
+第二段如下：
+
+~~~rust
+let db_output_keys_text = props.db_output_text
+    .get()
+    .get(0)
+    .iter()
+    .flat_map(|dict| dict.keys().cloned())
+    .collect();
+    
+let db_output_keys_text = create_memo(ctx, move || db_output_keys_text.to_vec());
+~~~
+
+
 
 
 
