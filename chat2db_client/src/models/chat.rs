@@ -9,6 +9,12 @@ pub struct Chat {
     pub openai_key: String,
 }
 
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+pub struct ChatResp {
+    pub code: u8,
+    pub result: String,
+}
+
 impl Chat {
     pub async fn exec_chat(
         openai_key: String,
@@ -36,10 +42,11 @@ impl Chat {
         );
 
         let resp = HttpUtils::post(content::exec_chat_url.to_owned(), None, body).await?;
-        let resp = resp.into_serde().unwrap();
+        let resp: String = resp.into_serde().unwrap();
         info!("resp: {:?}", resp);
+        let resp: ChatResp = serde_json::from_str(&resp)?;
 
-        Ok(resp)
+        Ok(resp.result)
     }
 }
 

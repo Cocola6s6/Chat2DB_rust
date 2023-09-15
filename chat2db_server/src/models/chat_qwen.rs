@@ -96,7 +96,7 @@ impl ChatQwen {
         });
 
         let chat_qwen = ChatQwen {
-            model: "qwen-v1".to_string(),
+            model: "qwen-plus".to_string(),
             input: Input { messages },
         };
         // println!("chat_qwen={:?}", chat_qwen);
@@ -118,7 +118,7 @@ impl ChatQwen {
         let resp: ChatQwenResponse = resp.json().await?;
         println!("{:?}", resp);
 
-        Ok("".to_string())
+        Ok(resp.output.text)
     }
 }
 
