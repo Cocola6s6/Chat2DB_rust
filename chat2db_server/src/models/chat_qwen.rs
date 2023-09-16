@@ -100,7 +100,7 @@ impl ChatQwen {
             input: Input { messages },
         };
         // println!("chat_qwen={:?}", chat_qwen);
-        println!("chat_qwen_json={}", json!(&chat_qwen));
+        // println!("chat_qwen_json={}", json!(&chat_qwen));
 
 
         // 2、请求API
@@ -113,10 +113,9 @@ impl ChatQwen {
             .send()
             .await?;
 
-
         // 3、解析响应
         let resp: ChatQwenResponse = resp.json().await?;
-        println!("{:?}", resp);
+        println!("resp={:?}", resp);
 
         Ok(resp.output.text)
     }
@@ -132,7 +131,7 @@ mod tests {
         let openai_key = "sk-34a5ce02952b436bb955dab064177c20".to_string();
         let db_url = "postgres://postgres:postgres@45.128.222.100:15432".to_string();
         let db_ns = "public".to_string();
-        let text = "查询test所有数据";
+        let text = "查询test2下的所有数据";
         let resp = ChatQwen::exec_chat(&openai_key, &db_url, &db_ns, &text)
             .await
             .unwrap();

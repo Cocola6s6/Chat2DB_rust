@@ -54,7 +54,7 @@ impl Chat {
 impl Default for Chat {
     fn default() -> Self {
         Chat {
-            openai_key: "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".to_string(),
+            openai_key: "sk-34a5ce02952b436bb955dab064177c20".to_string(),
         }
     }
 }

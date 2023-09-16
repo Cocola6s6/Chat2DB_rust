@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, BTreeMap};
 
 use sycamore::prelude::*;
 use tracing::info;
@@ -6,14 +6,8 @@ use tracing::info;
 #[derive(Props)]
 pub struct Props<'a> {
     pub chat_output_text: &'a Signal<String>,
-    pub db_output_text: &'a Signal<Vec<HashMap<String, String>>>,
+    pub db_output_text: &'a Signal<Vec<BTreeMap<String, String>>>,
     pub tables_output_text: &'a Signal<Vec<String>>,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-struct Cat {
-    id: &'static str,
-    name: &'static str,
 }
 
 // output 组件
@@ -35,10 +29,10 @@ pub async fn Chatoutput<'a, G: Html>(ctx: Scope<'a>, props: Props<'a>) -> View<G
             .collect()
     });
     let tables_output_text = create_memo(ctx, move || {
-        props.tables_output_text.get().join(" ").to_string()
+        props.tables_output_text.get().to_vec()
     });
 
-    // let items = create_signal(ctx, vec!["id", "name"]);
+    let items = create_signal(ctx, vec!["id", "name"]);
     // let items_2 = create_signal(
     //     ctx,
     //     vec![
@@ -58,9 +52,20 @@ pub async fn Chatoutput<'a, G: Html>(ctx: Scope<'a>, props: Props<'a>) -> View<G
             label(class="block mb-2 text-sm font-medium text-gray-900 dark:text-white") {
                 (format!("CHAT_RESULT: {}", chat_output_text))
             }
+        }
 
-            label(class="block mb-2 text-sm font-medium text-gray-900 dark:text-white") {
-                (format!("TABLES_RESULT: {}", tables_output_text))
+        div{
+            label(class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"){
+                ("Tables:")
+            }
+            select(class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"){
+                Keyed(
+                    iterable=tables_output_text,
+                    view=|ctx, x| view! { ctx,
+                        option{(x)}
+                    },
+                    key=|x| x.clone(),
+                )
             }
         }
 

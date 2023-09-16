@@ -1,7 +1,6 @@
 use crate::models::chat::Chat;
 use crate::models::db::Db;
 use crate::AppState;
-use anyhow::Result;
 use rand::Rng;
 use sycamore::futures::spawn_local_scoped;
 use sycamore::prelude::*;
@@ -22,7 +21,7 @@ pub fn Connection<G: Html>(ctx: Scope<'_>) -> View<G> {
     };
 
     view! {ctx,
-        // todo!();
+        // TODO 输入需要反显回输入信息。
         form (class="gap-6 mb-6 md:grid-cols-2") {
             div() {
                 div() {

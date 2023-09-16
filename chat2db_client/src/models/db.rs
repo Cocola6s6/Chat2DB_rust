@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, BTreeMap};
 
 use crate::common::{content, http_utils::HttpUtils};
 use anyhow::{Ok, Result};
@@ -13,7 +13,7 @@ pub struct Db {
 }
 
 impl Db {
-    pub async fn exec_sql(db_url: String, sql: String) -> Result<Vec<HashMap<String, String>>> {
+    pub async fn exec_sql(db_url: String, sql: String) -> Result<Vec<BTreeMap<String, String>>> {
         info!("[exec_sql]======================>{:?},{:?}", db_url, sql);
 
         let url = content::exec_sql_url.to_owned();
@@ -27,7 +27,7 @@ impl Db {
             db_url, sql
         );
         let resp = HttpUtils::post(url, None, body).await?;
-        let resp: Vec<HashMap<String, String>> = resp.into_serde().unwrap();
+        let resp: Vec<BTreeMap<String, String>> = resp.into_serde().unwrap();
         info!("resp: {:?}", resp);
 
         Ok(resp)

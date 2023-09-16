@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, BTreeMap};
 
 use anyhow::{Ok, Result};
 use db_schema::PgSchema;
@@ -67,9 +67,9 @@ impl Db {
         db_url: &str,
         sql: &str,
         code: u32,
-    ) -> Result<Vec<HashMap<String, String>>> {
+    ) -> Result<Vec<BTreeMap<String, String>>> {
         // 声明list保存所有行数据
-        let mut list: Vec<HashMap<String, String>> = Vec::new();
+        let mut list: Vec<BTreeMap<String, String>> = Vec::new();
 
         match code {
             2 => {
@@ -82,13 +82,19 @@ impl Db {
                     let columns = row.columns();
 
                     // 声明map保存行数据
-                    let mut map: HashMap<String, String> = HashMap::new();
+                    let mut map: BTreeMap<String, String> = BTreeMap::new();
 
-                    for (i, column) in columns.iter().enumerate() {
+                    // 根据ordinal排序，固定字段顺序
+                    let mut sorted_columns = columns.iter().collect::<Vec<_>>();
+                    sorted_columns.sort_by_key(|c| c.ordinal());
+                    // println!("sorted_columns={:?}", sorted_columns);
+
+                    for (i, column) in sorted_columns.iter().enumerate() {
                         // 获取字段名
                         let name = column.name();
                         let type_info = column.type_info();
-                        // println!("name={:?}, type_info={:?}", name, type_info);
+                        // let ordinal = column.ordinal();
+                        // println!("name={:?}, type_info={:?}, ordinal={:?}", name, type_info, ordinal);
 
                         // 获取字段值
                         // TODO 统一返回类型，使用serde_json::Value，否则会类型不匹配报错
@@ -103,11 +109,10 @@ impl Db {
                         let value = value.to_string().replace("\"", "");
                         println!("name={:?}, value={:?}", name, value);
 
-                        
                         map.insert(name.to_string(), value);
-                        
+                        // println!("map={:?}", map)
                     }
-                    
+
                     list.push(map);
                 }
 
@@ -161,7 +166,7 @@ mod tests {
     async fn test_exec_sql() {
         dotenv().unwrap();
         let db_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| "".to_string());
-        let sql = "select * from test";
+        let sql = "select * from test2";
         let code = 2;
         let resp = Db::exec_sql(&db_url, &sql, code).await.unwrap();
         println!("resp={:#?}", resp);
