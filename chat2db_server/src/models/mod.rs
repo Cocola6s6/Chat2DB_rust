@@ -6,3 +6,4 @@ pub mod chat_req;
 pub mod tables_req;
 pub mod sql_req;
 pub mod chat_qwen;
+pub mod connection;

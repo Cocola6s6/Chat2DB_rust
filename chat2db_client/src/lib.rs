@@ -1,12 +1,14 @@
 pub mod components;
 pub mod models;
 pub mod common;
+pub mod routers;
 
 use models::chat::Chat;
 use models::db::Db;
+use serde::{Serialize, Deserialize};
 use sycamore::reactive::{RcSignal, create_rc_signal};
 
-#[derive(Debug, Default, PartialEq, Clone)]
+#[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
 pub struct AppState {
     pub chat: RcSignal<Chat>,
     pub db: RcSignal<Db>,

@@ -6,7 +6,7 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use sqlx::{Column, PgPool, Row, TypeInfo};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Db {
     pub db_url: String,
     pub db_ns: String,

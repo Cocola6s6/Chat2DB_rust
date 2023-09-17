@@ -26,7 +26,7 @@ pub async fn App<G: Html>(ctx: Scope<'_>) -> View<G> {
             }
         }
 
-        // TODO 解决路由参数传递问题
+        
         // TODO 使用路由，替换掉下面的静态。存在问题：1）页面刷新了，当前上下文中的AppState传递不到下一个页面
         Router(
             integration=HistoryIntegration::new(),

@@ -1,4 +1,5 @@
 use crate::models::chat::Chat;
+use crate::models::connection::Connection;
 use crate::models::db::Db;
 use crate::AppState;
 use rand::Rng;
@@ -16,7 +17,13 @@ pub fn Connection<G: Html>(ctx: Scope<'_>) -> View<G> {
     let connection_btn_event = move |_| {
         info!("[button_event_listener_2]=======================>");
         spawn_local_scoped(ctx, async move {
+            // 本地缓存
             set_state(ctx, openai_key_signal.get().to_string(), db_url_signal.get().to_string(), db_ns_signal.get().to_string()).await;
+
+            // 服务器本地缓存
+            let _ = Connection::conn(openai_key_signal.get().to_string(), db_url_signal.get().to_string(), db_ns_signal.get().to_string())
+                .await
+                .unwrap_or_default();
         })
     };
 

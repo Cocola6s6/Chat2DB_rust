@@ -1,23 +1,17 @@
-use crate::common::cache_utils::CacheUtils;
 use crate::components::chatoutput::Chatoutput;
 use crate::models::chat::Chat;
+use crate::models::connection::Connection;
 use crate::models::db::Db;
 use crate::AppState;
 use sycamore::futures::spawn_local_scoped;
 use sycamore::prelude::*;
 use tracing::info;
 
-// TODO 解决路由参数传递问题
-#[derive(Props)]
-pub struct Props<'a> {
-    pub openai_key_text: &'a Signal<String>,
-    pub db_url_text: &'a Signal<String>,
-    pub db_ns_text: &'a Signal<String>,
-}
-
 // input 组件
 #[component]
-pub async fn Chatinput<'a, G: Html>(ctx: Scope<'a>, props: Props<'a>) -> View<G> {
+pub async fn Chatinput<'a, G: Html>(ctx: Scope<'a>) -> View<G> {
+    get_conn(ctx).await;
+
     let state = use_context::<AppState>(ctx);
     info!("state={:?}=======================>", state);
 
@@ -128,4 +122,20 @@ pub async fn Chatinput<'a, G: Html>(ctx: Scope<'a>, props: Props<'a>) -> View<G>
                 )
             }
     }
+}
+
+// 获取服务器本地缓存
+async fn get_conn(ctx: Scope<'_>) {
+    let connection = Connection::get_conn(1).await.unwrap();
+    let chat = Chat {
+        openai_key: connection.openai_key.clone(),
+    };
+    let db = Db {
+        db_url: connection.db.db_url.clone(),
+        db_ns: connection.db.db_ns.clone(),
+    };
+
+    let state = use_context::<AppState>(ctx);
+    state.chat.set(chat);
+    state.db.set(db);
 }

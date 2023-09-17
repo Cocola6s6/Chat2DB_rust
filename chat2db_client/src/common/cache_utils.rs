@@ -1,6 +1,4 @@
-use sycamore::prelude::*;
 use tracing::info;
-use wasm_bindgen::JsValue;
 use web_sys::{window, Storage};
 
 pub struct CacheUtils {}

@@ -1,5 +1,8 @@
 use actix_cors::Cors;
 use actix_web::{http, web, App, HttpServer};
+use chat2db_server::routers::connection::conn_router;
+use chat2db_server::routers::connection::dis_conn_router;
+use chat2db_server::routers::connection::get_conn_router;
 use std::io;
 use chat2db_server::routers::chat::chat_router;
 use chat2db_server::routers::chat::hello;
@@ -19,7 +22,7 @@ async fn main() -> io::Result<()> {
             .allowed_headers(vec![http::header::ACCEPT, http::header::CONTENT_TYPE])
             .max_age(3600);
 
-        App::new().wrap(cors).service(chat_router).service(hello).service(sql_router).service(table_router)
+        App::new().wrap(cors).service(chat_router).service(hello).service(sql_router).service(table_router).service(conn_router).service(dis_conn_router).service(get_conn_router)
     };
 
     // 启动
