@@ -29,6 +29,7 @@
 * db_schema，查看数据库的 schema，作为 prompt 中的上下文提示
 * sqlx，查询数据库数据
 * actix-web，创建 web 服务
+* moka、lru，用作本地缓存
 
 
 
@@ -49,6 +50,8 @@
 
 
 ~~~bash
+
+# =================================== chat ==================================
 # exec_chat
 service chat {
     rpc exec_chat(chat_req) returns (chat_resp) {}
@@ -59,8 +62,8 @@ chat_req {
     text: String,
 }
 
-# query_tables
-# exec_sql
+# =================================== db ==================================
+# query_tables、exec_sql
 service db {
     rpc query_tables(tables_req) returns (tables_resp) {}
     rpc exec_sql(sql_req) returns (sql_resp) {}
@@ -76,18 +79,34 @@ sql_req {
     db_ns: String,
 }
 
+
+# =================================== connection ==================================
+# conn、dis_conn、get_conn
+struct Connection {
+    pub console_id: usize,
+    pub openai_key: String,
+    pub db: Db,
+}
+
+impl Connection {
+	fn conn(openai_key, db_url, db_url, db_ns) -> usize {}
+	fn dis_conn(console_id) {}
+	fn get_conn(console_id) -> Connection {}
+}
+
 ~~~
 
 
 
-## Reference-level explanation of Server
+## Server 端
 
 ### 一、模块设计
 
-分为 chat 模块 和 db 模块。
+分为 chat 模块、db 模块、connection 模块。
 
-* chat 用来处理和 gpt 交互相关。
-* db 用来处理和数据库交互相关。
+* chat，用来处理和 gpt 交互相关。
+* db，用来处理和数据库交互相关。
+* connection，用来处理用户的连接信息。 
 
 
 
@@ -151,9 +170,19 @@ let value: serde_json::Value = match type_info.name() {
 
 
 
+### 六、设计 conn 功能
+
+1. 获取数据，将数据保存到本地缓存中。
 
 
-## Reference-level explanation of Client
+
+【准备】
+
+* lru crate/moka crate，可以作为本地缓存。
+
+
+
+## Client 端
 
 ### 一、组件设计
 
@@ -274,18 +303,42 @@ Indexed(
 
 
 
+#### 4、router 路由组件设计
+
+将 chat、db、connection 组件放在不同的页面，需要进行路由调整。
+
+路由调整需要解决的问题就是上下文的问题，页面调整之后上下文是会被清除。在 Client 端的处理可以选择的方式：
+
+* 浏览器缓存
+* url 带上信息。
+
+这些都不友好，因为 openai_key 等信息是不能对外暴露的。所以采取 Server 端缓存的方式。
+
+
+
+【connection 组件】
+
+* 点击事件触发后，不仅要将信息保存到上下文，还需要将信息保存到服务端。
+
+
+
+【chatinput 组件、chatouput 组件】
+
+* 路由跳转进入后，首先从服务端获取上下文信息，然后缓存到当前组件上行文中。
+
 
 
 ### 二、模块设计
 
-分为 chat 模块 和 db 模块。
+分为 chat 模块、db 模块、connection 模块
 
-* chat 用来处理和 server 端的关于 gpt 交互相关。
-* db 用来处理和 server 端的关于数据库交互相关。
+* chat，用来处理和 server 端的关于 gpt 交互相关。
+* db，用来处理和 server 端的关于数据库交互相关。
+* connection，用来处理用户的连接信息。 
 
 
 
-### 三、设计 exec_chat、 query_tables、exec_sql功能
+### 三、设计 exec_chat、 query_tables、exec_sql 等功能
 
 1. 初始化 http client。跨域配置、请求头配置、post 请求消息体配置等
 2. 发送 http 请求。
@@ -293,9 +346,24 @@ Indexed(
 
 
 
+### 四、UI 设计
+
+* [builder.io 插件](https://www.builder.io)，可以将网页转换成 UI 设计图。
+* [figma_to_code 插件](https://www.figma.com/community/plugin/842128343887142055/Figma-to-Code-(HTML%2C-Tailwind%2C-Flutter%2C-SwiftUI))，可以将 UI 设计图生成代码。
+
+
+
+![image-20230918173514368](https://note-1305755407.cos.ap-nanjing.myqcloud.com/note/image-20230918173514368.png)
+
+
+
+![image-20230918173802216](https://note-1305755407.cos.ap-nanjing.myqcloud.com/note/image-20230918173802216.png)
+
+
+
 ## Drawbacks
 
-* [Chat2DB](https://github.com/chat2db/Chat2DB)  具有很多效果，比如支持多数据源、更好的 UI 交互等等，现在 Chat2DB_rust 只是简单地支持Postgres，而且代码的兼容性也不好。
+* [Chat2DB](https://github.com/chat2db/Chat2DB)  具有很多效果，比如支持多数据源、更好的 UI 交互等等，现在 Chat2DB_rust 只是简单地支持 Postgres，而且代码的兼容性也不好。
 
 
 
@@ -381,4 +449,8 @@ let db_output_keys_text = create_memo(ctx, move || db_output_keys_text.to_vec())
 
 
 #### 7、server 的 panic 没有处理，需要处理 panic。
+* 已完成
+
+#### 8、优化 UI
+
 * 已完成
