@@ -88,7 +88,8 @@ mod tests {
     #[test]
     async fn get_conn() {
         let console_id = 1;
-        let resp = Connection::get_conn(console_id).await.unwrap();
+        let req = GetConnReq { console_id };
+        let resp = Connection::get_conn(req).await.unwrap();
         println!("resp={:#?}", resp);
     }
 }
