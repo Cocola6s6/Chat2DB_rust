@@ -18,68 +18,89 @@ pub fn Connection<G: Html>(ctx: Scope<'_>) -> View<G> {
         info!("[button_event_listener_2]=======================>");
         spawn_local_scoped(ctx, async move {
             // 本地缓存
-            set_state(ctx, openai_key_signal.get().to_string(), db_url_signal.get().to_string(), db_ns_signal.get().to_string()).await;
+            set_state(
+                ctx,
+                openai_key_signal.get().to_string(),
+                db_url_signal.get().to_string(),
+                db_ns_signal.get().to_string(),
+            )
+            .await;
 
             // 服务器本地缓存
-            let _ = Connection::conn(openai_key_signal.get().to_string(), db_url_signal.get().to_string(), db_ns_signal.get().to_string())
-                .await
-                .unwrap_or_default();
+            let _ = Connection::conn(
+                openai_key_signal.get().to_string(),
+                db_url_signal.get().to_string(),
+                db_ns_signal.get().to_string(),
+            )
+            .await
+            .unwrap_or_default();
         })
     };
 
     view! {ctx,
         // TODO 输入需要反显回输入信息。
-        form (class="gap-6 mb-6 md:grid-cols-2") {
-            div() {
-                div() {
-                    label(class="block mb-2 text-sm font-medium text-gray-900 dark:text-white") {
+        div(class="Frame w-[1200px] h-[800px] relative bg-white") {
+            div(class="WelcomeToChat2dbRust w-[1083px] h-[46px] left-[24px] top-[222px] absolute text-center text-black text-4xl font-normal font-['Open Sans'] leading-9") {
+                "Welcome to Chat2DB_Rust!"
+            }
+
+            div(class="WelcomeBackItSGreatToHaveYou w-[308px] left-[433px] top-[306px] absolute text-center text-slate-400 text-lg font-normal font-['Open Sans'] leading-[18px]") {
+                "Welcome back it's great to have you!"
+            }
+
+            div(class=" w-[22px] left-[830px] top-[217px] absolute text-center text-black text-4xl font-normal font-['Open Sans'] leading-9") {
+                "👋"
+            }
+
+            form {
+                div {
+                    label(class="Openaikey w-[87px] h-5 left-[351px] top-[380px] absolute text-black text-sm font-normal font-['Open Sans'] leading-[14px]") {
                         "OPENAI_KEY:"
                     }
                     input(
                         bind:value=openai_key_signal,
                         type="text", id="openai_key",
-                        class="block mx-4 p-2.5 w-1/2 text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    ) {
-                    }
+                        class="Openaikey w-[472px] h-[45px] left-[351px] top-[405px] absolute bg-white rounded border border-slate-300"
+                    ) {}
                 }
 
-                div() {
-                    label(class="block mb-2 text-sm font-medium text-gray-900 dark:text-white") {
+                div {
+                    label(class="Dburl w-[87px] h-5 left-[351px] top-[466px] absolute text-black text-sm font-normal font-['Open Sans'] leading-[14px]") {
                         "DB_URL:"
                     }
                     input(
                         bind:value=db_url_signal,
                         type="text",
                         id="db_url",
-                        class="block mx-4 p-2.5 w-1/2 text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    ) {
-                    }
+                        class="Dburl w-[472px] h-[45px] left-[351px] top-[488px] absolute bg-white rounded border border-slate-300"
+                    ) {}
                 }
 
-                div() {
-                    label(class="block mb-2 text-sm font-medium text-gray-900 dark:text-white") {
+                div{
+                    label(class="Dbns w-[87px] h-5 left-[351px] top-[547px] absolute text-black text-sm font-normal font-['Open Sans'] leading-[14px]") {
                         "DB_NS:"
                     }
                     input(
                         bind:value=db_ns_signal,
                         type="text",
                          id="db_ns",
-                        class="block mx-4 p-2.5 w-1/2 text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    ) {
-                    }
+                         class="Dbns w-[472px] h-[45px] left-[351px] top-[571px] absolute bg-white rounded border border-slate-300"
+                    ) {}
                 }
+            }
+
+            div {
+                div(class="Connection w-[123px] h-[29px] left-[525px] top-[676px] absolute text-center text-white text-sm font-normal font-['Roboto']") {}
+                button(
+                    on:click=connection_btn_event,
+                    id="connection_btn",
+                    class="Connection w-[157px] h-[42px] left-[508px] top-[663px] absolute bg-blue-500 rounded"
+                )
+                {"Connection"}
             }
         }
 
-        div(class="grid gap-6 mb-6 md:grid-cols-2") {
-            button(
-                on:click=connection_btn_event,
-                id="connection_btn",
-                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-            ) {
-                "Connection"
-            }
-        }
+
     }
 }
 
