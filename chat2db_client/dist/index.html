@@ -3,73 +3,16 @@
     <meta http-equiv="X-UT-Compatible" content="IE=edge">
     <title>Chat2DB Client</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.7.0/flowbite.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/tailwind-d212487048c5baeb.css">
+    <link rel="stylesheet" href="/tailwind-a58145b00a521325.css">
 
-<link rel="preload" href="/chat2db_client-202dd27414d301bf_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
-<link rel="modulepreload" href="/chat2db_client-202dd27414d301bf.js"></head>
+<link rel="preload" href="/chat2db_client-3b256d1046c66594_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
+<link rel="modulepreload" href="/chat2db_client-3b256d1046c66594.js"></head>
 
 <body>
-    <div>
-        <form>
-            <div class="grid gap-6 mb-6 md:grid-cols-2">
-                <div class="mb-6">
-                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">OPENAI_KEY:</label>
-                    <input type="text" id="openai_key" class="block mx-4 p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                </div>
-                <div class="mb-6">
-                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">DB_URL:</label>
-                    <input type="text" id="db_url" class="block mx-4 p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                </div>
-                <div class="mb-6">
-                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">DB_NS:</label>
-                    <input type="text" id="db_ns" class="block mx-4 p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                </div>
-            </div>
-        </form>
-        <div class="grid gap-6 mb-6 md:grid-cols-2">
-            <button id="connection_btn" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                Connection
-            </button>
-        </div>
-    </div>
-    <div>
-        <form>
-            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">YOUR MESSAGE:</label>
-            <div class="grid gap-6 mb-6 md:grid-cols-2">
-                <textarea id="text" rows="1" class="block mx-4 p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Your message..."></textarea>
-            </div>
-        </form>
-        <div class="grid gap-6 mb-6 md:grid-cols-2">
-            <button id="ask_btn" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                Ask
-            </button>
-        </div>
-        <div class="grid gap-6 mb-6 md:grid-cols-2">
-            <button id="exec_btn" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                Exec
-            </button>
-        </div>
-        <div class="grid gap-6 mb-6 md:grid-cols-2">
-            <button id="query_tables_btn" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                Tables
-            </button>
-        </div>
-    </div>
-    <div>
-        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">CHAT_RESULT:</label>
-        <p id="chat_output"></p>
-    </div>
-    <div>
-        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">DB_RESULT:</label>
-        <p id="db_output"></p>
-    </div>
-    <div>
-        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">TABLES_RESULT:</label>
-        <p id="tables_output"></p>
-    </div>
 
 
-<script type="module">import init from '/chat2db_client-202dd27414d301bf.js';init('/chat2db_client-202dd27414d301bf_bg.wasm');</script><script>(function () {
+
+<script type="module">import init from '/chat2db_client-3b256d1046c66594.js';init('/chat2db_client-3b256d1046c66594_bg.wasm');</script><script>(function () {
     var protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     var url = protocol + '//' + window.location.host + '/_trunk/ws';
     var poll_interval = 5000;

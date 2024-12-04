@@ -11,11 +11,18 @@ dotenv = "0.15.0"
 console_error_panic_hook = "0.1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1"
-sycamore = { version = "0.9.0-beta.1", features = [
+sycamore = { version = "=0.9.0-beta.1", features = [
     "serde",
     "suspense",
+    "web",
 ] }
-sycamore-router = "0.9.0-beta.1"
+sycamore-router = "=0.9.0-beta.1"
+sycamore-core = "=0.9.0-beta.1"
+sycamore-futures = "=0.9.0-beta.1"
+sycamore-macro = "=0.9.0-beta.1"
+sycamore-reactive = "=0.9.0-beta.1"
+sycamore-view-parser = "=0.9.0-beta.4"
+sycamore-web = "=0.9.0-beta.1"
 tracing = "0.1"
 tracing-wasm = "0.2"
 js-sys = "0.3.56"
