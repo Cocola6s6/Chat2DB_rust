@@ -2,39 +2,50 @@ use crate::models::db::Db;
 use crate::models::prompt::PromptTemplate;
 use anyhow::{Ok, Result};
 use askama::Template;
-use reqwest::{ Client, Method};
+use reqwest::{Client, Method};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 /**
- * {
-    "model": "qwen-v1",
-    "input": {
-        "messages": [
-            {
-                "role": "system",
-                "content": "你是达摩院的生活助手机器人。"
+ * 入参
+{
+    "model": "qwen-plus",
+    "messages": [
+        {
+            "role": "system",
+            "content": "You are a helpful assistant."
+        },
+        {
+            "role": "user",
+            "content": "你是谁？"
+        }
+    ]
+}
+ */
+
+/**
+ * 返回
+{
+    "choices": [
+        {
+            "message": {
+                "role": "assistant",
+                "content": "我是阿里云开发的一款超大规模语言模型，我叫通义千问。"
             },
-            {
-                "role": "user",
-                "content": "你好，附近哪里有博物馆？"
-            }
-        ]
-    }
+            "finish_reason": "stop",
+            "index": 0,
+            "logprobs": null
+        }
+    ]
 }
  */
 
 const BASE_URL: &str =
-    "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation";
+    "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions";
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ChatQwen {
     pub model: String,
-    pub input: Input,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Input {
     pub messages: Vec<Message>,
 }
 
@@ -54,19 +65,20 @@ pub enum Role {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ChatQwenResponse {
-    pub output: Output,
+    pub choices: Vec<Choice>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Output {
-    pub text: String,
+pub struct Choice {
+    pub message: Message,
+    pub finish_reason: String,
 }
 
 impl ChatQwen {
     pub fn new(&self, openai_key: String) -> ChatQwen {
         ChatQwen {
-            model: "qwen-v1".to_string(),
-            input: todo!(),
+            model: "qwen-plus".to_string(),
+            messages: todo!(),
         }
     }
 
@@ -97,7 +109,7 @@ impl ChatQwen {
 
         let chat_qwen = ChatQwen {
             model: "qwen-plus".to_string(),
-            input: Input { messages },
+            messages: messages,
         };
         // println!("chat_qwen={:?}", chat_qwen);
         // println!("chat_qwen_json={}", json!(&chat_qwen));
@@ -108,7 +120,7 @@ impl ChatQwen {
         let request = client.request(Method::POST, BASE_URL);
 
         let resp = request
-            .header("Authorization", openai_key)
+            .header("Authorization", "Bearer ".to_string() + openai_key)
             .json(&json!(chat_qwen))
             .send()
             .await?;
@@ -117,7 +129,8 @@ impl ChatQwen {
         let resp: ChatQwenResponse = resp.json().await?;
         println!("resp={:?}", resp);
 
-        Ok(resp.output.text)
+        let resp = resp.choices[0].message.content.clone();
+        Ok(resp)
     }
 }
 
@@ -128,13 +141,35 @@ mod tests {
 
     #[test]
     async fn test_exec_chat() {
-        let openai_key = "sk-34a5ce02952b436bb955dab064177c20".to_string();
-        let db_url = "postgres://postgres:postgres@45.128.222.100:15432".to_string();
+        let openai_key = "sk-510ed600fa2342ffbb88d53931bb70b0".to_string();
+        let db_url = "postgres://postgres:postgres@115.190.35.167:5432".to_string();
         let db_ns = "public".to_string();
-        let text = "查询test2下的所有数据";
+        let text = "查询test_tb下的所有数据";
         let resp = ChatQwen::exec_chat(&openai_key, &db_url, &db_ns, &text)
             .await
             .unwrap();
         println!("resp={:?}", resp);
+    }
+
+    #[test]
+    async fn test_resp() {
+        let message: Message = serde_json::from_str(
+            r#"{
+            "role": "assistant",
+            "content": "我是阿里云开发的一款超大规模语言模型，我叫通义千问。"
+        }"#,
+        )
+            .unwrap();
+
+        let resp = ChatQwenResponse {
+            choices: vec![Choice {
+                message: message,
+                finish_reason: "stop".to_string(),
+            }],
+        };
+
+        let jsonResp = serde_json::to_string(&resp).unwrap();
+
+        println!("jsonResp={:?}", jsonResp);
     }
 }
